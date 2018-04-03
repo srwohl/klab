@@ -32,7 +32,7 @@
 							</arguments>
 							<classpathScope>compile</classpathScope>
 							<includePluginDependencies>true</includePluginDependencies>
-							<cleanupDaemonThreads>false</cleanupDaemonThreads> 
+							<cleanupDaemonThreads>false</cleanupDaemonThreads>
 						</configuration>
 					</execution>  -->
 					<execution>
@@ -118,6 +118,10 @@
 					</filesets>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
