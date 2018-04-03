@@ -1,5 +1,12 @@
-target
-src-gen/
-xtend-gen/
 .*
+build/
+catalog-v001.xml
+model/
+plugin.xml_gen
+__pycache__/
+src-gen/
+target
+*_trace
+*.xtendbin
+xtend-gen/
 
