@@ -22,7 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<!-- Careful here: geotools must be right for jgrasstools to work; JTS 
+		<!-- Careful here: geotools must be right for jgrasstools to work; JTS
 			should be the same one that geotools needs. -->
 		<geotools.version>19-SNAPSHOT</geotools.version>
 		<jgrasstools-version>0.8.1</jgrasstools-version>
@@ -34,14 +34,14 @@
 		<tycho-version>1.0.0</tycho-version>
 		<xtextVersion>2.12.0</xtextVersion>
 
-		<!-- the five below go together. Never change one without checking the 
+		<!-- the five below go together. Never change one without checking the
 			others -->
 		<spring-boot-version>1.4.2.RELEASE</spring-boot-version>
 		<spring-ldap-version>4.2.0.RELEASE</spring-ldap-version>
 		<spring-version>4.3.4.RELEASE</spring-version>
 		<junit-version>4.12</junit-version>
 		<jackson-version>2.8.5</jackson-version>
-		<!-- end versions that need to be in lock-step to avoid multiple Spring 
+		<!-- end versions that need to be in lock-step to avoid multiple Spring
 			issues -->
 
 		<joda-time-version>2.3</joda-time-version>
@@ -60,6 +60,19 @@
 						<target>${maven.compiler.target}</target>
 					</configuration>
 				</plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
