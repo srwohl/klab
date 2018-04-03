@@ -71,6 +71,13 @@
 			<version>${xtextVersion}</version>
 		</dependency>
 
+        <!-- explicitly including this even though it's brought in transitively by XText, 
+             because it's used directly in Models.java -->
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>3.0</version>
+        </dependency>
 
 		<!-- ijblob - feature extractor for spatial rasters -->
 		<dependency>
