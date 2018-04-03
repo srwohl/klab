@@ -9,6 +9,7 @@ import org.integratedmodelling.kim.api.IComputableResource;
 import org.integratedmodelling.kim.api.IKimAnnotation;
 import org.integratedmodelling.kim.api.IServiceCall;
 import org.integratedmodelling.kim.api.data.ILocator;
+import org.integratedmodelling.kim.model.ComputableResource;
 import org.integratedmodelling.klab.Extensions;
 import org.integratedmodelling.klab.Klab;
 import org.integratedmodelling.klab.api.data.artifacts.IObjectArtifact;
@@ -50,7 +51,8 @@ public class Actuator implements IActuator {
 
   // this is only for the API
   private List<IComputableResource> computedResources = new ArrayList<>();
-  // we store the annotations from the model to enable probes or other non-semantic options
+  // we store the annotations from the model to enable probes or other
+  // non-semantic options
   private List<IKimAnnotation>      annotations       = new ArrayList<>();
 
   public void addComputation(IComputableResource resource) {
@@ -59,7 +61,10 @@ public class Actuator implements IActuator {
     computationStrategy.add(new Pair<>(serviceCall, resource));
   }
 
-  public void addMediation(IComputableResource resource) {
+  public void addMediation(IComputableResource resource, Actuator target) {
+    ((ComputableResource) resource)
+        .setTarget(target.getAlias() == null ? target.getName() : target.getAlias());
+    ((ComputableResource) resource).setMediation(true);
     computedResources.add(resource);
     IServiceCall serviceCall = Klab.INSTANCE.getRuntimeProvider().getServiceCall(resource);
     mediationStrategy.add(new Pair<>(serviceCall, resource));
@@ -132,7 +137,8 @@ public class Actuator implements IActuator {
      */
     List<Pair<IContextualizer, IComputableResource>> computation = new ArrayList<>();
 
-    // localize names to this actuator's expectations; create non-semantic storage if needed
+    // localize names to this actuator's expectations; create non-semantic storage
+    // if needed
     IRuntimeContext ctx = setupContext(target, runtimeContext, ITime.INITIALIZATION);
     for (Pair<IServiceCall, IComputableResource> service : Collections.join(computationStrategy,
         mediationStrategy)) {
@@ -143,7 +149,6 @@ public class Actuator implements IActuator {
       }
       computation.add(new Pair<>((IContextualizer) contextualizer, service.getSecond()));
     }
-    
 
     // this will be null if the actuator is for an instantiator
     IArtifact ret = target;
@@ -260,16 +265,26 @@ public class Actuator implements IActuator {
         ret += ((Actuator) actuator).encode(offset + 3) + "\n";
       }
 
-      List<Pair<IServiceCall, IComputableResource>> serviceCalls = new ArrayList<>();
-      serviceCalls.addAll(computationStrategy);
-      serviceCalls.addAll(mediationStrategy);
-
-      for (int i = 0; i < serviceCalls.size(); i++) {
-        ret += (i == 0 ? (ofs + "   compute ") : ofs + "     ")
-            + serviceCalls.get(i).getFirst().getSourceCode()
-            + (serviceCalls.get(i).getSecond().getTarget() == null ? ""
-                : (" as " + serviceCalls.get(i).getSecond().getTarget()))
-            + (i < serviceCalls.size() - 1 ? "," : "") + "\n";
+      int cout = mediationStrategy.size() + computationStrategy.size();
+      int nout = 0;
+      for (int i = 0; i < mediationStrategy.size(); i++) {
+        ret += (nout == 0 ? (ofs + "   compute" + (cout < 2 ? " " : ("\n" + ofs + "     ")))
+            : ofs + "     ")
+            + (mediationStrategy.get(i).getSecond().getTarget() == null ? ""
+                : (mediationStrategy.get(i).getSecond().getTarget() + " >> "))
+            + mediationStrategy.get(i).getFirst().getSourceCode()
+            + (nout < mediationStrategy.size() - 1 || computationStrategy.size() > 0 ? "," : "")
+            + "\n";
+        nout++;
+      }
+      for (int i = 0; i < computationStrategy.size(); i++) {
+        ret += (nout == 0 ? (ofs + "   compute" + (cout < 2 ? " " : ("\n" + ofs + "      ")))
+            : ofs + "     ")
+            + computationStrategy.get(i).getFirst().getSourceCode()
+            + (computationStrategy.get(i).getSecond().getTarget() == null ? ""
+                : (" as " + computationStrategy.get(i).getSecond().getTarget()))
+            + (nout < computationStrategy.size() - 1 ? "," : "") + "\n";
+        nout++;
       }
 
       // UNCOMMENT TO OUTPUT SEMANTICS
@@ -374,7 +389,8 @@ public class Actuator implements IActuator {
   }
 
   public boolean isStorageDynamic(IScale scale) {
-    // TODO inspect the computations and the observable semantics; check if we have any temporal
+    // TODO inspect the computations and the observable semantics; check if we have
+    // any temporal
     // modifications
     return scale.isTemporallyDistributed();
   }
@@ -387,7 +403,8 @@ public class Actuator implements IActuator {
     return annotations;
   }
 
-  // coverage in an actuator is only set when it covers a sub-scale compared to that of resolution.
+  // coverage in an actuator is only set when it covers a sub-scale compared to
+  // that of resolution.
   // The same field is used in a dataflow to define the overall coverage.
   public void setCoverage(Coverage coverage) {
     this.coverage = coverage;
