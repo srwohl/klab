@@ -92,7 +92,7 @@ public class Resource implements IResource {
 	public Resource(ResourceReference reference) {
 
 		this.urn = reference.getUrn();
-		this.version = Version.create(reference.getVersion());
+		this.version = reference.getVersion() == null ? null : Version.create(reference.getVersion());
 		this.adapterType = reference.getAdapterType();
 		this.localPath = reference.getLocalPath();
 		this.type = reference.getType();
@@ -124,7 +124,7 @@ public class Resource implements IResource {
 		ResourceReference ret = new ResourceReference();
 
 		ret.setUrn(this.urn);
-		ret.setVersion(this.version.toString());
+		ret.setVersion(this.version == null ? null : this.version.toString());
 		ret.setGeometry(this.getGeometry() == null ? null : this.getGeometry().encode());
 		ret.setAdapterType(this.getAdapterType());
 		ret.setLocalPath(this.localPath);

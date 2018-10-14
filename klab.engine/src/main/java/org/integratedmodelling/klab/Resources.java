@@ -374,7 +374,7 @@ public enum Resources implements IResourceService {
 		 * Publishing them makes 0.1.build. Only their owners (or peer review?) can
 		 * promote them to 1.0.0 or anything higher than the initial version.
 		 */
-		final Version version = ret == null ? Version.create("0.0.1")
+		final Version version = (ret == null || ret.getVersion() == null) ? Version.create("0.0.1")
 				: ret.getVersion().withBuild(ret.getVersion().getBuild() + 1);
 
 		// TODO define history items - add to previous if existing, date of creation
