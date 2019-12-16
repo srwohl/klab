@@ -67,6 +67,7 @@ import org.integratedmodelling.klab.components.geospace.processing.osm.Geocoder;
 import org.integratedmodelling.klab.components.geospace.processing.osm.Geocoder.Location;
 import org.integratedmodelling.klab.components.runtime.DefaultRuntimeProvider;
 import org.integratedmodelling.klab.components.runtime.RuntimeScope;
+import org.integratedmodelling.klab.components.runtime.actors.SessionActor;
 import org.integratedmodelling.klab.data.resources.Resource;
 import org.integratedmodelling.klab.dataflow.Flowchart;
 import org.integratedmodelling.klab.dataflow.Flowchart.ElementType;
@@ -116,7 +117,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.ibm.icu.text.NumberFormat;
 
-import akka.actor.ActorRef;
+import akka.actor.typed.ActorRef;
 
 /**
  * Engine session. Implements UserDetails to be directly usable as a principal
@@ -1192,12 +1193,14 @@ public class Session implements ISession, UserDetails, IMessageBus.Relay {
 	 * 
 	 * @return
 	 */
-	public ActorRef getRootActor() {
+	public ActorRef<SessionActor.Command> getRootActor() {
 		if (this.rootActor == null) {
 			this.rootActor = ((DefaultRuntimeProvider) Klab.INSTANCE.getRuntimeProvider()).getActorSystem()
-					.actorFor(getId());
+					.create(SessionActor.create(),getId());
 		}
 		return this.rootActor;
 	}
+
+
 
 }

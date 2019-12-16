@@ -49,6 +49,7 @@ import org.integratedmodelling.klab.api.runtime.NonReentrant;
 import org.integratedmodelling.klab.api.runtime.dataflow.IActuator;
 import org.integratedmodelling.klab.api.runtime.dataflow.IDataflow;
 import org.integratedmodelling.klab.api.runtime.monitoring.IMonitor;
+import org.integratedmodelling.klab.components.runtime.actors.EngineActor;
 import org.integratedmodelling.klab.components.runtime.contextualizers.CastingStateResolver;
 import org.integratedmodelling.klab.components.runtime.contextualizers.CategoryClassificationResolver;
 import org.integratedmodelling.klab.components.runtime.contextualizers.ClassifyingStateResolver;
@@ -87,7 +88,7 @@ import org.integratedmodelling.klab.resolution.ResolutionScope;
 import org.integratedmodelling.klab.scale.Scale;
 import org.integratedmodelling.klab.utils.Pair;
 
-import akka.actor.ActorSystem;
+import akka.actor.typed.ActorSystem;
 
 /**
  * This component provides the default dataflow execution runtime and the
@@ -107,7 +108,7 @@ import akka.actor.ActorSystem;
 @Component(id = "org.integratedmodelling.runtime", version = Version.CURRENT)
 public class DefaultRuntimeProvider implements IRuntimeProvider {
 
-	private ActorSystem rootActorSystem = null;
+	private ActorSystem<String> rootActorSystem = null;
 	private ExecutorService executor = Executors.newFixedThreadPool(Configuration.INSTANCE.getDataflowThreadCount());
 
 	@Override
@@ -192,11 +193,11 @@ public class DefaultRuntimeProvider implements IRuntimeProvider {
 	 * 
 	 * @return
 	 */
-	public ActorSystem getActorSystem() {
+	public ActorSystem<String> getActorSystem() {
 		if (rootActorSystem == null) {
 			Logging.INSTANCE.info("Creating root actor system...");
 			rootActorSystem = ActorSystem
-					.create(Authentication.INSTANCE.getAuthenticatedIdentity(IEngine.class).getId());
+					.create(EngineActor.create(),Authentication.INSTANCE.getAuthenticatedIdentity(IEngine.class).getId());
 		}
 		return rootActorSystem;
 	}
