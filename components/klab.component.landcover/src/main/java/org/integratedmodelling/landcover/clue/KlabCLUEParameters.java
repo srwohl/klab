@@ -2,38 +2,46 @@ package org.integratedmodelling.landcover.clue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.integratedmodelling.kim.api.IKimClassifier;
 import org.integratedmodelling.kim.api.IKimConcept;
 import org.integratedmodelling.kim.api.IKimConcept.Type;
 import org.integratedmodelling.kim.api.IKimQuantity;
+import org.integratedmodelling.kim.api.IKimTable;
 import org.integratedmodelling.kim.api.IParameters;
 import org.integratedmodelling.klab.Concepts;
 import org.integratedmodelling.klab.Klab;
 import org.integratedmodelling.klab.Observables;
 import org.integratedmodelling.klab.Resources;
+import org.integratedmodelling.klab.Units;
 import org.integratedmodelling.klab.api.data.ILocator;
 import org.integratedmodelling.klab.api.data.IResource;
 import org.integratedmodelling.klab.api.data.IResourceCalculator;
 import org.integratedmodelling.klab.api.data.IStorage;
 import org.integratedmodelling.klab.api.data.classification.IDataKey;
-import org.integratedmodelling.klab.api.data.general.ITable;
 import org.integratedmodelling.klab.api.knowledge.IConcept;
 import org.integratedmodelling.klab.api.observations.IProcess;
 import org.integratedmodelling.klab.api.observations.IState;
 import org.integratedmodelling.klab.api.observations.scale.IScale;
 import org.integratedmodelling.klab.api.observations.scale.space.IGrid;
 import org.integratedmodelling.klab.api.observations.scale.space.ISpace;
+import org.integratedmodelling.klab.api.observations.scale.time.ITimeInstant;
 import org.integratedmodelling.klab.api.provenance.IArtifact;
+import org.integratedmodelling.klab.common.mediation.Quantity;
+import org.integratedmodelling.klab.common.mediation.Unit;
 import org.integratedmodelling.klab.components.geospace.extents.Space;
+import org.integratedmodelling.klab.components.time.extents.Time;
+import org.integratedmodelling.klab.components.time.extents.TimeInstant;
 import org.integratedmodelling.klab.data.resources.ResourceCalculator;
 import org.integratedmodelling.klab.engine.runtime.api.IRuntimeScope;
 import org.integratedmodelling.klab.exceptions.KlabResourceNotFoundException;
 import org.integratedmodelling.klab.exceptions.KlabValidationException;
 import org.integratedmodelling.klab.utils.Pair;
-import org.integratedmodelling.klab.utils.Triple;
+import org.integratedmodelling.klab.utils.Range;
 
 import nl.alterra.shared.rasterdata.RasterData;
 import nl.wur.iclue.model.demand.DemandFactory.DemandValidationType;
@@ -148,11 +156,7 @@ public class KlabCLUEParameters extends Parameters {
 			double deviationValue = defaultDeviation;
 			boolean isDeviationArea = false;
 			double elasticity = 0;
-			List<Triple<Long, Double, Boolean>> demandspecs = new ArrayList<>();
-
-			LanduseDistribution demand = new LanduseDistribution();
-
-			demand.setAdministrativeUnit(getAdministrativeUnits().getDatakind().getClasses().iterator().next());
+			List<Pair<Long, Integer>> demandspecs = new ArrayList<>();
 
 			/*
 			 * check specs. If not specified for this landuse, use sensible defaults.
@@ -167,15 +171,17 @@ public class KlabCLUEParameters extends Parameters {
 
 			if (parameters.get("demand") != null) {
 
-				boolean done = false;
-
 				for (Object[] row : findMatching(landUse.getConcept(), parameters.get("demand"))) {
+
+					long time = 0;
+					int cells = 0;
 
 					if (row.length == 1) {
 
 						/*
 						 * no year; can be a proportion or an area measurement to conver into cells
 						 */
+						cells = quantityToCells(row[0]);
 
 					} else if (row.length > 1) {
 
@@ -183,26 +189,18 @@ public class KlabCLUEParameters extends Parameters {
 						 * should be date/time to convert into time index and a proportion or an area
 						 * measurement to conver into cells
 						 */
-
+						time = quantityToTime(row[1]);
+						cells = quantityToCells(row[2]);
 					}
 
-					done = true;
-				}
+					demandspecs.add(new Pair<Long, Integer>(time, cells));
 
-				/*
-				 * default demand is 0
-				 */
-				if (!done) {
-					demand.setArea(0);
-					demand.setLanduse(landUse);
 				}
-
-				demand.setYear(1);
 			}
 
 			if (parameters.get("deviations") != null) {
 
-				for (Object[] row : findMatching(landUse.getConcept(), parameters.get("demand"))) {
+				for (Object[] row : findMatching(landUse.getConcept(), parameters.get("deviations"))) {
 
 					int dvalue = 10;
 
@@ -225,12 +223,38 @@ public class KlabCLUEParameters extends Parameters {
 
 			}
 
+			if (demandspecs.isEmpty()) {
+
+				LanduseDistribution demand = new LanduseDistribution();
+				demand.setAdministrativeUnit(getAdministrativeUnits().getDatakind().getClasses().iterator().next());
+				demand.setArea(0);
+				demand.setYear(1);
+				demand.setLanduse(landUse);
+				demands.add(demand);
+
+			} else {
+				for (Pair<Long, Integer> p : demandspecs) {
+
+					long timeslice = 0;
+					if (p.getFirst() > 0) {
+						ITimeInstant it = new TimeInstant(p.getFirst());
+						timeslice = ((Time) ((Time) ret.getScale().getTime()).at(it)).getLocatedOffset();
+					}
+
+					LanduseDistribution demand = new LanduseDistribution();
+					demand.setAdministrativeUnit(getAdministrativeUnits().getDatakind().getClasses().iterator().next());
+					demand.setArea(p.getSecond());
+					demand.setYear((int) timeslice + 1);
+					demand.setLanduse(landUse);
+					demands.add(demand);
+				}
+			}
+
 			dDeviations.put(landUse, (int) (100.0 * deviationValue));
 			vTypes.put(landUse, isDeviationArea ? DemandValidationType.ABSOLUTE_DEVIATION
 					: DemandValidationType.PERCENTAGE_DEVIATION);
 			landUse.setEaseOfChange(EaseOfChange.findByProbability(elasticity));
 
-			demands.add(demand);
 		}
 
 		setDemands(demands);
@@ -239,22 +263,40 @@ public class KlabCLUEParameters extends Parameters {
 		setBaseline(new KLABSpatialDataset(this.lulc));
 		setTargetTime(1);
 
-		ITable<?> transitionTable = null;
+		IKimTable transitionTable = parameters.get("transitions", IKimTable.class);
 		List<Conversion> conversions = new ArrayList<>();
 
+		Map<IConcept, Integer> order = new LinkedHashMap<>();
+
+		if (transitionTable != null) {
+
+			// must be square besides the first row
+			if (transitionTable.getColumnCount() != transitionTable.getRowCount() + 1) {
+
+			}
+
+			// build order and validate table
+
+		}
+
+		for (IConcept c : order.keySet()) {
+			// TODO ensure the datakey contains all mentioned concepts, even if not present
+			// in data.
+		}
+
 		for (Landuse from : getLanduses()) {
+
+			int fromIndex = findClosest(from.getConcept(), order);
+
 			for (Landuse to : getLanduses()) {
+
+				int toIndex = findClosest(to.getConcept(), order);
+
 				Rule rule = null;
-				if (from == to) {
+				if (from == to || fromIndex < 0 || toIndex < 0) {
 					rule = new Always();
 				} else {
-					if (transitionTable != null) {
-						/*
-						 * TODO find in table. If not, use Always.
-						 */
-					} else {
-						rule = new Always();
-					}
+					// determine rule from table
 				}
 				conversions.add(new Conversion(from, to, rule));
 			}
@@ -262,6 +304,35 @@ public class KlabCLUEParameters extends Parameters {
 
 		setConversions(conversions);
 
+	}
+
+	private int findClosest(IConcept concept, Map<IConcept, Integer> order) {
+		if (order.isEmpty()) {
+			return -1;
+		}
+		return -1;
+	}
+
+	private long quantityToTime(Object object) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	private int quantityToCells(Object object) {
+
+		if (object instanceof Number) {
+			if (!Range.create(0, 1, true).contains(((Number) object).doubleValue())) {
+				throw new KlabValidationException("invalid proportion of area: " + object);
+			}
+			// TODO must use the total accessible cells, not the grid size
+			return (int) ((double) grid.getCellCount() * ((Number) object).doubleValue());
+		} else if (object instanceof IKimQuantity) {
+			Quantity quantity = Quantity.create(((IKimQuantity) object).getValue(),
+					Unit.create(((IKimQuantity) object).getUnit()));
+			int ret = (int) (quantity.in(Units.INSTANCE.SQUARE_METERS) / grid.getCell(0).getStandardizedArea());
+			return ret == 0 ? 1 : ret;
+		}
+		return 0;
 	}
 
 	/**
@@ -305,18 +376,20 @@ public class KlabCLUEParameters extends Parameters {
 					return ret;
 				}
 			}
-		} else if (object instanceof ITable) {
+		} else if (object instanceof IKimTable) {
 			for (int i = 0; i < 2; i++) {
 
 				if (i == 0) {
-					for (Object[] row : ((ITable<?>) object).getRows()) {
-						if (row[0] instanceof IKimConcept && concept.equals(Concepts.c(row[0].toString()))) {
+					for (IKimClassifier[] row : ((IKimTable) object).getRows()) {
+						if (row[0].getConceptMatch() != null
+								&& concept.equals(Concepts.c(row[0].getConceptMatch().toString()))) {
 							ret.add(row);
 						}
 					}
 				} else if (i > 0) {
-					for (Object[] row : ((ITable<?>) object).getRows()) {
-						if (row[0] instanceof IKimConcept && concept.is(Concepts.c(((IConcept) row[0]).toString()))) {
+					for (IKimClassifier[] row : ((IKimTable) object).getRows()) {
+						if (row[0].getConceptMatch() != null
+								&& concept.is(Concepts.c(row[0].getConceptMatch().toString()))) {
 							ret.add(row);
 						}
 					}
@@ -374,6 +447,10 @@ public class KlabCLUEParameters extends Parameters {
 			this.ageData.add(ageMap, 0);
 		}
 		return this.ageData;
+	}
+
+	public IRuntimeScope getKlabScope() {
+		return this.scope;
 	}
 
 }
