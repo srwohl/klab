@@ -49,7 +49,6 @@ import org.integratedmodelling.klab.components.geospace.extents.Grid;
 import org.integratedmodelling.klab.components.geospace.extents.Shape;
 import org.integratedmodelling.klab.components.geospace.extents.Space;
 import org.integratedmodelling.klab.components.geospace.processing.osm.Geocoder;
-import org.integratedmodelling.klab.components.geospace.visualization.Renderer;
 import org.integratedmodelling.klab.components.runtime.observations.DirectObservation;
 import org.integratedmodelling.klab.components.runtime.observations.Observation;
 import org.integratedmodelling.klab.components.runtime.observations.ObservationGroup;
@@ -533,7 +532,7 @@ public enum Observations implements IObservationService {
 			ret = ret + " " + observation.getObservable().getRange().getLowerBound() + " to "
 					+ observation.getObservable().getRange().getUpperBound();
 		}
-		
+
 		return ret;
 	}
 
@@ -651,6 +650,36 @@ public enum Observations implements IObservationService {
 
 	public boolean isNodata(Object o) {
 		return !isData(o);
+	}
+
+	/**
+	 * Do your best to retrieve an area in square meters from the passed locator.
+	 * 
+	 * @param locator
+	 * @return
+	 */
+	public double getArea(ILocator locator) {
+		if (locator instanceof IScale) {
+			return ((IScale) locator).getSpace().getStandardizedArea();
+		} else if (locator instanceof ISpace) {
+			return ((ISpace) locator).getStandardizedArea();
+		}
+		return 0;
+	}
+
+	/**
+	 * Do your best to retrieve an current time extent from the passed locator.
+	 * 
+	 * @param locator
+	 * @return
+	 */
+	public ITime getTime(ILocator locator) {
+		if (locator instanceof IScale) {
+			return ((IScale) locator).getTime();
+		} else if (locator instanceof ITime) {
+			return (ITime) locator;
+		}
+		return null;
 	}
 
 }

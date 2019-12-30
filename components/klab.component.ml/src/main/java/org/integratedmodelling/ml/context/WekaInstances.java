@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 
 import org.integratedmodelling.kim.api.IKimConcept.ObservableRole;
 import org.integratedmodelling.kim.api.IKimExpression;
+import org.integratedmodelling.kim.api.IParameters;
 import org.integratedmodelling.kim.api.IServiceCall;
 import org.integratedmodelling.kim.model.Kim;
 import org.integratedmodelling.kim.utils.KimUtils;
@@ -24,6 +25,7 @@ import org.integratedmodelling.klab.Observables;
 import org.integratedmodelling.klab.Observations;
 import org.integratedmodelling.klab.Types;
 import org.integratedmodelling.klab.api.data.ILocator;
+import org.integratedmodelling.klab.api.data.classification.IDataKey;
 import org.integratedmodelling.klab.api.extensions.ILanguageExpression;
 import org.integratedmodelling.klab.api.extensions.ILanguageProcessor.Descriptor;
 import org.integratedmodelling.klab.api.knowledge.IConcept;
@@ -38,9 +40,11 @@ import org.integratedmodelling.klab.api.provenance.IArtifact.Type;
 import org.integratedmodelling.klab.api.runtime.IContextualizationScope;
 import org.integratedmodelling.klab.components.runtime.observations.ObservationGroup;
 import org.integratedmodelling.klab.components.runtime.observations.State;
+import org.integratedmodelling.klab.data.classification.Classification;
 import org.integratedmodelling.klab.data.classification.Discretization;
 import org.integratedmodelling.klab.engine.runtime.api.IRuntimeScope;
 import org.integratedmodelling.klab.exceptions.KlabIOException;
+import org.integratedmodelling.klab.exceptions.KlabInternalErrorException;
 import org.integratedmodelling.klab.exceptions.KlabUnimplementedException;
 import org.integratedmodelling.klab.exceptions.KlabValidationException;
 import org.integratedmodelling.klab.kim.Prototype;
@@ -96,6 +100,7 @@ public class WekaInstances {
 	private Map<String, DiscretizerDescriptor> discretizers = new HashMap<>();
 	private Map<String, Ranges> ranges = new HashMap<>();
 	private ReplaceMissingValues missingValuesFilter = new ReplaceMissingValues();
+	private Map<String, IDataKey> dataKeys = new HashMap<>();
 
 	// these are for distributed archetypes
 	private double selectFraction = Double.NaN;
@@ -218,6 +223,12 @@ public class WekaInstances {
 	 * the resource.
 	 */
 	private IConcept explicitContext;
+
+	/*
+	 * any attribute that has a datakey serializes its datakey here, so we can save
+	 * it with the resource and reconstruct.
+	 */
+	private Map<String, List<String>> keys = new HashMap<>();
 
 	// for use in the encoder. Presets the attribute and predictor arrays.
 	public WekaInstances(IContextualizationScope context, int nPredictors) {
@@ -542,16 +553,29 @@ public class WekaInstances {
 		Attribute ret = null;
 		switch (observable.getArtifactType()) {
 		case NUMBER:
+
 			ret = new Attribute(observable.getName());
 			break;
+
 		case CONCEPT:
-			ret = new Attribute(observable.getName(),
-					state == null ? Types.INSTANCE.createClassification(observable).getLabels()
-							: new ArrayList<>(state.getDataKey().getLabels()));
+
+			List<String> labels = null;
+			if (state == null && dataKeys.containsKey(observable.getName())) {
+				labels = dataKeys.get(observable.getName()).getLabels();
+			} else if (state == null) {
+				labels = Types.INSTANCE.createClassification(observable).getLabels();
+			} else {
+				labels = new ArrayList<>(state.getDataKey().getLabels());
+				keys.put(observable.getName(), state.getDataKey().getSerializedObjects());
+			}
+			ret = new Attribute(observable.getName(), labels);
+
 			break;
 		case BOOLEAN:
+
 			ret = new Attribute(observable.getName(), Lists.newArrayList("false", "true"));
 			break;
+
 		default:
 			// shouldn't happen.
 			throw new IllegalStateException("WEKA learning process: occurrence state " + observable
@@ -982,6 +1006,89 @@ public class WekaInstances {
 		}
 	}
 
+	public Instance getInstance(IParameters<String> data) {
+
+		Instance ret = new DenseInstance(attributes.size());
+		ret.setDataset(getInstances());
+		ret.setClassMissing();
+
+		int ndata = 0;
+		for (int i = 1; i < attributes.size(); i++) {
+
+			Attribute attribute = attributes.get(i);
+
+			Object o = data.get(attribute.name());
+			if (Observations.INSTANCE.isData(o)) {
+
+				double value = Double.NaN;
+
+				if (attribute.type() == Attribute.NUMERIC) {
+					value = o instanceof Number ? ((Number) o).doubleValue()
+							: (o instanceof Boolean ? (((Boolean) o) ? 1 : 0) : Double.NaN);
+				} else if (o instanceof IConcept) {
+					if (dataKeys.containsKey(attribute.name())) {
+						value = dataKeys.get(attribute.name()).reverseLookup(o);
+					} else {
+						throw new KlabInternalErrorException(
+								"Weka: internal: cannot interpret value " + o + ": no datakey");
+					}
+				} else {
+					throw new KlabUnimplementedException(
+							"Weka: only numeric, boolean or classification predictors are supported for now.");
+				}
+
+				if (Double.isNaN(value)) {
+					if (admitsNodata) {
+						ret.setMissing(i);
+					} else {
+						return null;
+					}
+				} else {
+					ret.setValue(i, value);
+					ndata++;
+				}
+
+			} else if (admitsNodata) {
+				ret.setMissing(i);
+			} else {
+				return null;
+			}
+		}
+
+		if (ndata < (attributes.size() - 1 - MAX_ALLOWED_NODATA)) {
+			return null;
+		}
+
+		// go through the discretizers
+		for (String obs : discretizers.keySet()) {
+			if (!obs.equals(predictedObservable.getName())) {
+				try {
+					Filter discretizer = discretizers.get(obs).getDiscretizer();
+					if (!discretizer.input(ret)) {
+						discretizer.batchFinished();
+					}
+					ret = discretizer.output();
+				} catch (Exception e) {
+					if (!errorWarning) {
+						errorWarning = true;
+						context.getMonitor().warn(
+								"Generation of instance to classify generated an error (further errors will not be reported): "
+										+ e.getMessage());
+					}
+				}
+			}
+		}
+
+		/*
+		 * go through the missing value filter
+		 */
+		if (missingValuesFilter != null && missingValuesFilter.input(ret)) {
+			ret = missingValuesFilter.output();
+		}
+
+		return ret;
+	}
+
 	/**
 	 * Produce an instance from the context and a location using the discretizers
 	 * for each predictor, leaving the class attribute as nodata. If nodata are not
@@ -1149,6 +1256,43 @@ public class WekaInstances {
 	 */
 	public IObservable getPredictedObservable() {
 		return predictedObservable;
+	}
+
+	public List<String> getDatakeyDefinitions(String name) {
+		return keys.get(name);
+	}
+
+	public void setDatakey(String id, List<String> key) {
+
+		List<IConcept> concepts = new ArrayList<>();
+		for (String definition : key) {
+			IObservable o = Observables.INSTANCE.declare(definition);
+			if (o == null) {
+				throw new KlabValidationException("resource is using obsolete or unknown concepts: " + definition);
+			}
+			concepts.add(o.getType());
+		}
+
+		IObservable root = null;
+		if (id.equals("predicted")) {
+			root = predictedObservable;
+		} else {
+			root = getPredictorObservable(id);
+		}
+
+		if (root == null) {
+			throw new KlabValidationException("resource cannot establish observable for '" + id + "'");
+		}
+
+		this.dataKeys.put(id, new Classification(root.getType(), concepts));
+	}
+
+	public IDataKey getDatakey(String name) {
+		return dataKeys.get(name);
+	}
+
+	public void setPredictedObservable(IObservable obs) {
+		this.predictedObservable = obs;
 	}
 
 }
