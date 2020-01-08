@@ -7,16 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.math3.random.MersenneTwister;
 import org.integratedmodelling.kim.api.IKimClassifier;
 import org.integratedmodelling.kim.api.IKimTable;
 import org.integratedmodelling.klab.Concepts;
 import org.integratedmodelling.klab.Observations;
 import org.integratedmodelling.klab.api.data.ILocator;
-import org.integratedmodelling.klab.api.data.general.IExpression;
 import org.integratedmodelling.klab.api.knowledge.IConcept;
+import org.integratedmodelling.klab.api.observations.IState;
 import org.integratedmodelling.klab.api.observations.scale.time.ITime;
 import org.integratedmodelling.klab.api.observations.scale.time.ITimeInstant;
 import org.integratedmodelling.klab.engine.runtime.api.IRuntimeScope;
+import org.integratedmodelling.klab.engine.runtime.code.LocatedExpression;
 import org.integratedmodelling.klab.exceptions.KlabValidationException;
 import org.integratedmodelling.klab.owl.IntelligentMap;
 import org.integratedmodelling.klab.owl.ReasonerCache;
@@ -25,7 +27,8 @@ public class LandcoverTransitionTable {
 
 	boolean transitive = true;
 	boolean canTransitionWhenUnspecified = false;
-
+	MersenneTwister random;
+	
 	ReasonerCache rcache = new ReasonerCache();
 
 	class TransitionRule {
@@ -35,7 +38,8 @@ public class LandcoverTransitionTable {
 		boolean never = false;
 		Long minimumAge;
 		ITimeInstant after;
-		IExpression selector;
+		LocatedExpression selector;
+		Double probability;
 
 		// rule gets deactivated after the demand for its target is met.
 		boolean active = true;
@@ -43,7 +47,7 @@ public class LandcoverTransitionTable {
 		public TransitionRule() {
 		}
 
-		public TransitionRule(IConcept target, IKimClassifier rule) {
+		public TransitionRule(IConcept target, IKimClassifier rule, IRuntimeScope overallScope) {
 			this.target = target;
 
 			if (rule.getBooleanMatch() != null) {
@@ -52,7 +56,11 @@ public class LandcoverTransitionTable {
 				} else {
 					this.never = true;
 				}
-			}
+			} else if (rule.getExpressionMatch() != null) {
+				this.selector = new LocatedExpression(rule.getExpressionMatch(), overallScope, true);
+			} else if (rule.getNumberMatch() != null) {
+				this.probability = rule.getNumberMatch();
+			} /* TODO dates and timepoints */
 		}
 
 		public boolean isPossible(ILocator locator, IRuntimeScope scope) {
@@ -66,12 +74,31 @@ public class LandcoverTransitionTable {
 			if (minimumAge != null) {
 
 			}
+			if (probability != null) {
+				return random.nextDouble() < probability;
+			}
 			if (after != null) {
 				ITime time = Observations.INSTANCE.getTime(locator);
 				return time.getEnd().getMilliseconds() > after.getMilliseconds();
 			}
 			if (selector != null) {
+				Object ret = selector.eval(scope, locator, Object.class);
+				if (ret instanceof Boolean) {
 
+				} else if (ret == null) {
+					return false;
+				} else if (ret instanceof Number) {
+					double d = ((Number) ret).doubleValue();
+					if (d < 0 || d > 1) {
+						throw new IllegalStateException(
+								"transition expressions returning numbers must return a probability between 0 and 1");
+					} else {
+						return random.nextDouble() < d;
+					}
+				} else {
+					throw new IllegalStateException(
+							"transition expressions must return true/false or [0,1] probabilities");
+				}
 			}
 			return false;
 		}
@@ -80,6 +107,7 @@ public class LandcoverTransitionTable {
 	IntelligentMap<Map<IConcept, TransitionRule>> transitions = new IntelligentMap<>();
 	public TransitionRule defaultTransitionRule;
 	private Set<IConcept> concepts = new HashSet<>();
+	private IState landcoverAge;
 
 	/**
 	 * Map the source concept to its admitted transitions to the target concepts,
@@ -92,9 +120,10 @@ public class LandcoverTransitionTable {
 	 * If this behavior isn't wanted, pass false to limit the transitions to the
 	 * actual classes and use the default for their children.
 	 */
-	public LandcoverTransitionTable(boolean transitiveTarget, boolean transitionsByDefault) {
+	public LandcoverTransitionTable(boolean transitiveTarget, boolean transitionsByDefault, MersenneTwister random) {
 		this.transitive = transitiveTarget;
 		this.defaultTransitionRule = new TransitionRule();
+		this.random = random;
 		if (transitionsByDefault) {
 			this.defaultTransitionRule.always = true;
 		} else {
@@ -114,7 +143,7 @@ public class LandcoverTransitionTable {
 		return transition.isPossible(locator, scope);
 	}
 
-	public void parse(IKimTable table) {
+	public void parse(IKimTable table, IRuntimeScope overallScope) {
 
 		if (table.getRowCount() < 2) {
 			throw new KlabValidationException("transition table must have at least two rows");
@@ -153,7 +182,7 @@ public class LandcoverTransitionTable {
 
 			for (int c = 1; c < table.getColumnCount(); c++) {
 				IKimClassifier rule = table.getRow(i)[c];
-				TransitionRule transition = new TransitionRule(targets.get(c - 1), rule);
+				TransitionRule transition = new TransitionRule(targets.get(c - 1), rule, overallScope);
 				map.put(targets.get(c - 1), transition);
 			}
 
@@ -176,7 +205,7 @@ public class LandcoverTransitionTable {
 		if (defaultTransitionRule.always) {
 			return true;
 		}
-		
+
 		for (IConcept c : transitions.keySet()) {
 			for (IConcept cc : transitions.get(c).keySet()) {
 				if (transitions.get(c).get(cc).active) {
@@ -184,13 +213,13 @@ public class LandcoverTransitionTable {
 				}
 			}
 		}
-		
+
 		return false;
 	}
 
 	/**
-	 * Deactivate any rule whose target is the passed concept. Return whether there are
-	 * any other active rules.
+	 * Deactivate any rule whose target is the passed concept. Return whether there
+	 * are any other active rules.
 	 * 
 	 * @param metDemand
 	 * @return
@@ -215,7 +244,8 @@ public class LandcoverTransitionTable {
 	 * 
 	 * @return
 	 */
-	public void activate() {
+	public void activate(IState landcoverAge) {
+		this.landcoverAge = landcoverAge;
 		for (IConcept c : transitions.keySet()) {
 			for (IConcept cc : transitions.get(c).keySet()) {
 				TransitionRule rule = transitions.get(c).get(cc);

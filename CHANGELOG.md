@@ -25,9 +25,20 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [comment]: <>   ()
 [comment]: <>   (Next build: [0.10.0.xxx] -- ISO Date)
 
-
 ## Unreleased
 ### Added
+- Add ITicket and ITicketManager for basic, file-based ticket management in both
+  engine and client packages.
+- IDE reads status of network periodically and enables publish action if there are
+  nodes that allow publishing for the adapter of the resource.
+- New Configuration::getProperty method uses overriding system properties.
+- Node permissions (query, publish and use of each adapter) configured from properties.
+- Node has its own engine and publishes basic permissions and adapters in capabilities.
+- Full CLUE-inspired (and much extended) landcover change module working and documented.
+- Fixed logics in contextualization of sub-countables removes bugs in relationship 
+  contextualization.
+- New class LocatedExpression to (eventually) substitute all custom expression handling in
+  contextualizers, accessing neighborhoods and the like automatically.
 - IResourceCalculator class to build an easy to use API wrapper for a resource and 
   evaluate it as a scalar and/or in a located context.
 - Learning models without an archetype will use the main observable as a dependency and change the main observable to its "predicted" version using the worldview core concept for predicted, now in the observation ontology. This allows faster and easier specification of simple learners. Distributed learned qualities now offers a sample (fraction) and a select (points for sampling) option in the Weka contextualizers.

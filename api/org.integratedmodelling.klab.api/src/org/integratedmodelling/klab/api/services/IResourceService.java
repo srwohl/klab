@@ -35,6 +35,7 @@ import org.integratedmodelling.klab.api.observations.scale.IScale;
 import org.integratedmodelling.klab.api.provenance.IArtifact;
 import org.integratedmodelling.klab.api.resolution.IResolvable;
 import org.integratedmodelling.klab.api.runtime.IContextualizationScope;
+import org.integratedmodelling.klab.api.runtime.ITicket;
 import org.integratedmodelling.klab.api.runtime.monitoring.IMonitor;
 import org.integratedmodelling.klab.utils.Pair;
 
@@ -90,14 +91,14 @@ public interface IResourceService {
 	}
 
 	/**
-	 * Get a calculator for the passed resource, or null if the resource 
-	 * adapter can't make one.
+	 * Get a calculator for the passed resource, or null if the resource adapter
+	 * can't make one.
 	 * 
 	 * @param resource
 	 * @return
 	 */
 	IResourceCalculator getCalculator(IResource resource);
-	
+
 	/**
 	 * The local resource catalog is for resources created from local files or
 	 * specifications. These resources are created by the {@link IResourceValidator
@@ -314,5 +315,23 @@ public interface IResourceService {
 	 */
 	boolean isResourceOnline(String urn);
 
+	/**
+	 * Submit a resource for publication to the node identified by nodeId, which
+	 * must be an online node on the network. Return an open ticket that will be
+	 * closed when publication is done.
+	 * 
+	 * @param resource
+	 * @param nodeId
+	 * @param suggestedName
+	 * @return a temporary ID to track the publishing.
+	 */
+	ITicket submitResource(IResource resource, String nodeId, String suggestedName);
+
+	/**
+	 * 
+	 * @param resource
+	 * @return
+	 */
+	boolean validateForPublication(IResource resource);
 
 }

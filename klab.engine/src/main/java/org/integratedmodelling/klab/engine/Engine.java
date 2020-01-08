@@ -31,6 +31,7 @@ import org.integratedmodelling.klab.Klab;
 import org.integratedmodelling.klab.Klab.AnnotationHandler;
 import org.integratedmodelling.klab.Logging;
 import org.integratedmodelling.klab.Logo;
+import org.integratedmodelling.klab.Network;
 import org.integratedmodelling.klab.Resources;
 import org.integratedmodelling.klab.Version;
 import org.integratedmodelling.klab.api.auth.ICertificate;
@@ -40,6 +41,7 @@ import org.integratedmodelling.klab.api.auth.IKlabUserIdentity;
 import org.integratedmodelling.klab.api.auth.IRuntimeIdentity;
 import org.integratedmodelling.klab.api.auth.IUserCredentials;
 import org.integratedmodelling.klab.api.auth.Roles;
+import org.integratedmodelling.klab.api.auth.ICertificate.Type;
 import org.integratedmodelling.klab.api.engine.IEngine;
 import org.integratedmodelling.klab.api.engine.IEngineStartupOptions;
 import org.integratedmodelling.klab.api.extensions.KimToolkit;
@@ -47,6 +49,7 @@ import org.integratedmodelling.klab.api.monitoring.IMessage;
 import org.integratedmodelling.klab.api.monitoring.IMessageBus;
 import org.integratedmodelling.klab.api.runtime.IScript;
 import org.integratedmodelling.klab.api.runtime.monitoring.IMonitor;
+import org.integratedmodelling.klab.api.runtime.rest.IClient;
 import org.integratedmodelling.klab.api.runtime.rest.INotification;
 import org.integratedmodelling.klab.api.services.IConfigurationService;
 import org.integratedmodelling.klab.auth.AnonymousEngineCertificate;
@@ -314,27 +317,36 @@ public class Engine extends Server implements IEngine, UserDetails {
 	 * @throws KlabException              if startup fails
 	 */
 	public static Engine start() {
-		return start(new EngineStartupOptions());
+		return start(null, new EngineStartupOptions());
 	}
 
-	public static Engine start(IEngineStartupOptions options) {
+	public static Engine start(ICertificate certificate) {
+		return start(certificate, new EngineStartupOptions());
+	}
 
-		ICertificate certificate = null;
+	public static Engine start(EngineStartupOptions options) {
+		return start(null, options);
+	}
 
-		if (options.isAnonymous()) {
-			certificate = new AnonymousEngineCertificate();
-		} else {
+	public static Engine start(ICertificate certificate, IEngineStartupOptions options) {
 
-			if (options.getCertificateResource() != null) {
-				certificate = KlabCertificate.createFromClasspath(options.getCertificateResource());
+		if (certificate == null) {
+
+			if (options.isAnonymous()) {
+				certificate = new AnonymousEngineCertificate();
 			} else {
-				File certFile = options.getCertificateFile();
-				if (!certFile.exists()) {
-					// check for legacy certificate
-					certFile = new File(Configuration.INSTANCE.getDataPath() + File.separator + "im.cert");
+
+				if (options.getCertificateResource() != null) {
+					certificate = KlabCertificate.createFromClasspath(options.getCertificateResource());
+				} else {
+					File certFile = options.getCertificateFile();
+					if (!certFile.exists()) {
+						// check for legacy certificate
+						certFile = new File(Configuration.INSTANCE.getDataPath() + File.separator + "im.cert");
+					}
+					certificate = certFile.exists() ? KlabCertificate.createFromFile(certFile)
+							: KlabCertificate.createDefault();
 				}
-				certificate = certFile.exists() ? KlabCertificate.createFromFile(certFile)
-						: KlabCertificate.createDefault();
 			}
 		}
 
@@ -348,8 +360,11 @@ public class Engine extends Server implements IEngine, UserDetails {
 			throw new KlabException("engine failed to start");
 		}
 
-		System.out.println("\n" + Logo.ENGINE_BANNER);
-		System.out.println("\nStartup successful: " + ret.getUsername() + " v" + Version.CURRENT + " on " + new Date());
+		if (certificate.getType() == ICertificate.Type.ENGINE) {
+			System.out.println("\n" + Logo.ENGINE_BANNER);
+			System.out.println(
+					"\nStartup successful: " + ret.getUsername() + " v" + Version.CURRENT + " on " + new Date());
+		}
 
 		return ret;
 	}
@@ -430,7 +445,7 @@ public class Engine extends Server implements IEngine, UserDetails {
 
 		Logging.INSTANCE.info("k.LAB v" + Version.CURRENT + " build " + Version.VERSION_BUILD + " @"
 				+ Version.VERSION_COMMIT + " booting...");
-		
+
 		/*
 		 * set up access to the k.IM grammar
 		 */
@@ -750,8 +765,13 @@ public class Engine extends Server implements IEngine, UserDetails {
 
 	@Override
 	public boolean isOnline() {
+		return Network.INSTANCE.getHub() != null && Network.INSTANCE.getNodes().size() > 0;
+	}
+
+	@Override
+	public IClient getClient() {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
 }
