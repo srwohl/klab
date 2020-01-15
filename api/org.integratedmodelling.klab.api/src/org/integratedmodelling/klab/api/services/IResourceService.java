@@ -25,7 +25,6 @@ import org.integratedmodelling.klab.api.data.IResourceCalculator;
 import org.integratedmodelling.klab.api.data.IResourceCatalog;
 import org.integratedmodelling.klab.api.data.adapters.IKlabData;
 import org.integratedmodelling.klab.api.data.adapters.IResourceAdapter;
-import org.integratedmodelling.klab.api.data.adapters.IResourcePublisher;
 import org.integratedmodelling.klab.api.data.adapters.IResourceValidator;
 import org.integratedmodelling.klab.api.knowledge.IProject;
 import org.integratedmodelling.klab.api.knowledge.IWorkspace;
@@ -109,16 +108,6 @@ public interface IResourceService {
 	 * @return the local resource catalog
 	 */
 	IResourceCatalog getLocalResourceCatalog();
-
-	/**
-	 * The public resource catalog contains resources after they have been published
-	 * by the {@link IResourcePublisher publisher} of the adapter that created the
-	 * resource. These resources can be shared with others and projects using their
-	 * URNs can be shared on k.LAB nodes.
-	 *
-	 * @return the public resource catalog
-	 */
-	IResourceCatalog getPublicResourceCatalog();
 
 	/**
 	 * Resolve the passed URN to a resource.
@@ -322,10 +311,11 @@ public interface IResourceService {
 	 * 
 	 * @param resource
 	 * @param nodeId
-	 * @param suggestedName
+	 * @param publicationData any user suggestions about name, namespace, catalog
+	 *                        and permissions.
 	 * @return a temporary ID to track the publishing.
 	 */
-	ITicket submitResource(IResource resource, String nodeId, String suggestedName);
+	ITicket submitResource(IResource resource, String nodeId, Map<String, String> publicationData);
 
 	/**
 	 * 

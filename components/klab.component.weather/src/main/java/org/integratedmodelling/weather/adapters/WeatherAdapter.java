@@ -1,14 +1,32 @@
 package org.integratedmodelling.weather.adapters;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.integratedmodelling.klab.Urn;
+import org.integratedmodelling.klab.Version;
 import org.integratedmodelling.klab.api.data.IGeometry;
+import org.integratedmodelling.klab.api.data.IResource;
 import org.integratedmodelling.klab.api.data.adapters.IKlabData.Builder;
 import org.integratedmodelling.klab.api.data.adapters.IUrnAdapter;
 import org.integratedmodelling.klab.api.provenance.IArtifact.Type;
 import org.integratedmodelling.klab.api.runtime.IContextualizationScope;
+import org.integratedmodelling.klab.data.resources.Resource;
+import org.integratedmodelling.klab.rest.ResourceReference;
 import org.integratedmodelling.weather.data.WeatherEvents;
 import org.integratedmodelling.weather.data.WeatherFactory;
 
+/**
+ * Urns:
+ * 
+ * klab:weather:data:<all|catalog> (handles primary output as parameter, e.g.
+ * #precipitation, and others as additional attributes)
+ * klab:weather:stations:<all|catalog> klab:weather:storms:<all|catalog>
+ * 
+ * @author Ferd
+ *
+ */
 public class WeatherAdapter implements IUrnAdapter {
 
 	public enum Services {
@@ -60,7 +78,13 @@ public class WeatherAdapter implements IUrnAdapter {
 		throw new IllegalArgumentException(
 				"weather service: URN namespace " + urn.getNamespace() + " cannot be understood");
 
-		
+	}
+
+	@Override
+	public Collection<String> getResourceUrns() {
+		List<String> ret = new ArrayList<>();
+		// TODO
+		return ret;
 	}
 
 	@Override
@@ -86,10 +110,13 @@ public class WeatherAdapter implements IUrnAdapter {
 
 		switch (Services.valueOf(urn.getNamespace())) {
 		case data:
+			// S2
 			break;
 		case stations:
+			// #T0S0(nstations - according to catalog)
 			break;
 		case storms:
+			// #T0S2
 			break;
 		default:
 			break;
@@ -97,6 +124,25 @@ public class WeatherAdapter implements IUrnAdapter {
 
 		throw new IllegalArgumentException(
 				"weather service: URN namespace " + urn.getNamespace() + " cannot be understood");
+	}
+
+	@Override
+	public String getDescription() {
+		return "Weather stations and their data, reconstructed storm events and on-demand interpolation of weather records.";
+	}
+	
+	@Override
+	public IResource getResource(String urn) {
+		// TODO Auto-generated method stub
+		Urn kurn = new Urn(urn);
+		ResourceReference ref = new ResourceReference();
+		ref.setUrn(urn.toString());
+		ref.setAdapterType(getName());
+		ref.setLocalName(kurn.getResourceId());
+		ref.setGeometry("#"); // getGeometry(urn)
+		ref.setVersion(Version.CURRENT);
+		ref.setType(Type.VALUE); // getType(urn)
+		return new Resource(ref);
 	}
 
 }

@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.integratedmodelling.klab.api.runtime.ITicket;
+import org.integratedmodelling.klab.rest.TicketResponse;
 
 public class Ticket implements ITicket {
 
 	transient TicketManager manager;
-	
+
 	private String id;
 	private Date postDate;
 	private Date resolutionDate;
@@ -141,13 +142,15 @@ public class Ticket implements ITicket {
 	}
 
 	@Override
-	public void update(Object...objects) {
+	public void update(Object... objects) {
 		if (objects != null) {
 			for (int i = 0; i < objects.length; i++) {
 				if (objects[i] instanceof Status) {
 					this.status = (Status) objects[i];
 				} else if (objects[i] instanceof Type) {
 					this.type = (Type) objects[i];
+				} else if (objects[i] instanceof TicketResponse.Ticket) {
+					copy((TicketResponse.Ticket) objects[i]);
 				} else {
 					Object key = objects[i];
 					Object value = objects[++i];
@@ -157,7 +160,7 @@ public class Ticket implements ITicket {
 		}
 		this.manager.put(this);
 	}
-	
+
 	private void copy(Ticket t) {
 		this.data.clear();
 		this.data.putAll(t.data);
@@ -168,15 +171,25 @@ public class Ticket implements ITicket {
 		this.type = t.type;
 		this.id = t.id;
 	}
+
+	private void copy(TicketResponse.Ticket t) {
+		this.data.putAll(t.getData());
+		if (this.status == Status.OPEN && t.getStatus() != Status.OPEN) {
+			this.status = t.getStatus();	
+			this.resolutionDate = new Date(System.currentTimeMillis());
+		}
+	}
+
 	@Override
 	public void delete() {
 		manager.remove(this);
 	}
 
 	@Override
-	public void resolve() {
+	public void resolve(Object... data) {
+		update(data);
 		this.status = Status.RESOLVED;
-		refresh();
+		update();
 	}
 
 	@Override
@@ -185,7 +198,13 @@ public class Ticket implements ITicket {
 		if (status != null) {
 			this.statusMessage = status;
 		}
-		refresh();
+		update();
+	}
+
+	@Override
+	public String toString() {
+		return "Ticket [id=" + id + ", postDate=" + postDate + ", status=" + status + ", type=" + type + ", data="
+				+ data + "]";
 	}
 
 }
