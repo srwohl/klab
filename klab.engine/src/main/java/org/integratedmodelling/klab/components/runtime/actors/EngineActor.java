@@ -1,6 +1,6 @@
 package org.integratedmodelling.klab.components.runtime.actors;
 
-import org.integratedmodelling.klab.components.runtime.actors.SessionActor.RegisterMessage;
+
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -10,31 +10,46 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 
-public class EngineActor extends AbstractBehavior<String> {
+public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
+	
+   public interface CommandEngine{}
+   
+   public static class Start implements CommandEngine, SessionActor.Command{
+       public final String name;
 
-  public static Behavior<String> create() {
+       public Start(String name) {
+           this.name = name;
+       }
+   }
+   
+   // Factory
+
+  public static Behavior<CommandEngine> create() {
     return Behaviors.setup(EngineActor::new);
   }
+  
+  // Constructor 
 
-  private EngineActor(ActorContext<String> context) {
+  private EngineActor(ActorContext<CommandEngine> context) {
     super(context);
     context.getLog().info("Engine Actor started");
   }
 
   // No need to handle any messages
   @Override
-  public Receive<String> createReceive() {
+  public Receive<CommandEngine> createReceive() {
     return newReceiveBuilder()
-    		.onMessageEquals("start", this::start)
-    		.onSignal(PostStop.class, signal -> onPostStop()).build();
+    		.onMessage(Start.class, this::onStart)
+    		.onSignal(PostStop.class, signal -> onPostStop())
+    		.build();
   }
   
-  private Behavior<String> start() {
-	    ActorRef<SessionActor.Command> firstRef = getContext().spawn(SessionActor.create(), "first-actor");
+  private EngineActor onStart(Start str) {
+	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");
 
-	    System.out.println("First: " + firstRef);
-	    firstRef.tell("Start");
-	    return Behaviors.same();
+	    System.out.println("session Actor: " + SessAct);
+	    SessAct.tell(str);
+	    return this;
 	  }
 
   private EngineActor onPostStop() {

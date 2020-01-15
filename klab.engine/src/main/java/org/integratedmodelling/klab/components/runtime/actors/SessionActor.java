@@ -3,6 +3,7 @@ package org.integratedmodelling.klab.components.runtime.actors;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.integratedmodelling.klab.components.runtime.actors.EngineActor.Start;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -58,13 +59,14 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 
 	public Receive<Command> createReceive() {
 		return newReceiveBuilder()
-				.onMessage(RegisterMessage.class, this::handle)
+				.onMessage(RegisterMessage.class, this::onRegister)
+				.onMessage(EngineActor.Start.class, this::onStart)
 				.onSignal(PostStop.class, signal -> onPostStop())
 				.build();
 	}
 
 
-	private SessionActor handle(RegisterMessage trackMsg) {
+	private SessionActor onRegister(RegisterMessage trackMsg) {
 		String contextId = trackMsg.contextId;
 		ActorRef<ContextActor.Command> ref = contextIdToActor.get(contextId);
 		if (ref != null) {
@@ -78,6 +80,14 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 		}
 		return this;
 	}
+	
+	  private SessionActor onStart(Start str) {
+		    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");
+
+		    System.out.println("session Actor: " + SessAct);
+		    SessAct.tell(str);
+		    return this;
+		  }
 
 
 	private SessionActor onPostStop() {

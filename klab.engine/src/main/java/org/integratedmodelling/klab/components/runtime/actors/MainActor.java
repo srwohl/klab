@@ -2,6 +2,8 @@ package org.integratedmodelling.klab.components.runtime.actors;
 
 import org.integratedmodelling.klab.Authentication;
 import org.integratedmodelling.klab.api.engine.IEngine;
+import org.integratedmodelling.klab.api.observations.IObservation;
+import org.integratedmodelling.klab.components.runtime.actors.EngineActor.CommandEngine;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.ActorSystem;
@@ -16,10 +18,13 @@ public class MainActor {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		ActorSystem<String> rootActorSystem = ActorSystem
-				.create(EngineActor.create(),Authentication.INSTANCE.getAuthenticatedIdentity(IEngine.class).getId());
+		IObservation observation;
 		
-		rootActorSystem.tell("start");
+		ActorSystem<CommandEngine> rootActorSystem = ActorSystem
+				.create(EngineActor.create(),Authentication.INSTANCE.getAuthenticatedIdentity(IEngine.class).getId());
+				
+		
+		rootActorSystem.tell(new EngineActor.Start("start"));
 		
 
 	}
