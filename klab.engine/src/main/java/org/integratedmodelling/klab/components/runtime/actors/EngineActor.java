@@ -2,6 +2,8 @@ package org.integratedmodelling.klab.components.runtime.actors;
 
 
 
+import org.integratedmodelling.klab.api.observations.IObservation;
+
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.PostStop;
@@ -19,6 +21,14 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
 
        public Start(String name) {
            this.name = name;
+       }
+   }
+   
+   public static class ObsMsg implements CommandEngine, SessionActor.Command{
+       public IObservation observation;
+
+       public ObsMsg(IObservation observation) {
+           this.observation = observation;
        }
    }
    
@@ -40,9 +50,18 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
   public Receive<CommandEngine> createReceive() {
     return newReceiveBuilder()
     		.onMessage(Start.class, this::onStart)
+    		.onMessage(ObsMsg.class, this::onObsMsg)
     		.onSignal(PostStop.class, signal -> onPostStop())
     		.build();
   }
+  
+  private EngineActor onObsMsg(ObsMsg obs) {
+	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");
+
+	    System.out.println("session Actor: " + SessAct);
+	    SessAct.tell(new SessionActor.RegisterMessage(obs.observation));
+	    return this;
+	  }
   
   private EngineActor onStart(Start str) {
 	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");

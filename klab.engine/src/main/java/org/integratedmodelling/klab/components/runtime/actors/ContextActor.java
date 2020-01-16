@@ -53,11 +53,26 @@ public class ContextActor extends AbstractBehavior<ContextActor.Command>{
 	@Override
 	public Receive<Command> createReceive() {
 		return newReceiveBuilder()
-				.onMessage(SessionActor.RegisterMessage.class, this::handle)
+				.onMessage(RegisterMessage.class, this::handle)
 				.onMessage(Terminated.class, this::onTerminated)
 				.onSignal(PostStop.class, signal -> onPostStop())
 				.build();
 	}
+	
+	private ContextActor handle(RegisterMessage trackMsg) {
+		
+		ActorRef<ObservationActor.Command> ObsActor =
+				getContext()
+				.spawn(ObservationActor.create(contextId, trackMsg.observation.getId()), "observation-" + trackMsg.observation.getId());
+		observationIdToActor.put(trackMsg.observation.getId(), ObsActor);
+		return this;
+		
+		
+	}
+
+	
+	
+	/*
 
 	private ContextActor handle(SessionActor.RegisterMessage trackMsg) {
 		if (this.contextId.equals(trackMsg.contextId)) {
@@ -81,6 +96,8 @@ public class ContextActor extends AbstractBehavior<ContextActor.Command>{
 		}
 		return this;
 	}
+	
+	*/
 	
 	private ContextActor onTerminated(Terminated t) {
 		getContext().getLog().info("Observation actor for {} has been terminated", t.obsId);

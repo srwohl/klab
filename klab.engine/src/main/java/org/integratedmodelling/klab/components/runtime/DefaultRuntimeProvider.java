@@ -109,7 +109,7 @@ import akka.actor.typed.ActorSystem;
 @Component(id = "org.integratedmodelling.runtime", version = Version.CURRENT)
 public class DefaultRuntimeProvider implements IRuntimeProvider {
 
-	private ActorSystem<CommandEngine> rootActorSystem = null;
+	private static ActorSystem<CommandEngine> rootActorSystem = null;
 	private ExecutorService executor = Executors.newFixedThreadPool(Configuration.INSTANCE.getDataflowThreadCount());
 
 	@Override
@@ -201,7 +201,7 @@ public class DefaultRuntimeProvider implements IRuntimeProvider {
 	 * 
 	 * @return
 	 */
-	public ActorSystem<CommandEngine> getActorSystem() {
+	public static ActorSystem<CommandEngine> getActorSystem() {
 		if (rootActorSystem == null) {
 			Logging.INSTANCE.info("Creating root actor system...");
 			rootActorSystem = ActorSystem
@@ -380,6 +380,7 @@ public class DefaultRuntimeProvider implements IRuntimeProvider {
 
 		boolean createActors = observable.is(Type.COUNTABLE) && scale.isTemporallyDistributed();
 		Activity activity = null;
+		rootActorSystem = getActorSystem();
 
 		IIdentity identity = scope.getMonitor().getIdentity();
 		if (identity instanceof AbstractTask) {
@@ -411,6 +412,10 @@ public class DefaultRuntimeProvider implements IRuntimeProvider {
 		}
 
 		ret.setGenerator(activity);
+		
+		// rootActorSystem.tell(new EngineActor.Start("start"));
+		
+		rootActorSystem.tell(new EngineActor.ObsMsg(ret));
 
 		// into an Akka
 		// actor and register with the actor

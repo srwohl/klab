@@ -3,7 +3,11 @@ package org.integratedmodelling.klab.components.runtime.actors;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.integratedmodelling.klab.api.observations.IObservation;
+import org.integratedmodelling.klab.api.observations.ISubject;
 import org.integratedmodelling.klab.components.runtime.actors.EngineActor.Start;
+import org.integratedmodelling.klab.components.runtime.observations.Subject;
+import org.integratedmodelling.klab.engine.runtime.EventBus;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -24,6 +28,8 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 	public static Behavior<Command> create() {
 		return Behaviors.setup(SessionActor::new);
 	}
+	
+	ActorRef<ContextActor.Command> contextActor;
 
 	private final Map<String, ActorRef<ContextActor.Command>> contextIdToActor = new HashMap<>();
 
@@ -32,15 +38,11 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 	public interface Command {}  
 
 	public static final class RegisterMessage implements SessionActor.Command, ContextActor.Command {
-		public final String contextId;
-		public final String obsId;
-		public final ActorRef<ObsRegistered> replyTo;
+		public final IObservation observation;
 
 
-		public RegisterMessage(String contextId, String obsId,ActorRef<ObsRegistered> replyTo) {
-			this.contextId = contextId;
-			this.obsId = obsId;
-			this.replyTo = replyTo;
+		public RegisterMessage(IObservation observation) {
+			this.observation = observation;
 
 		}
 	}
@@ -64,22 +66,39 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 				.onSignal(PostStop.class, signal -> onPostStop())
 				.build();
 	}
-
-
-	private SessionActor onRegister(RegisterMessage trackMsg) {
-		String contextId = trackMsg.contextId;
-		ActorRef<ContextActor.Command> ref = contextIdToActor.get(contextId);
-		if (ref != null) {
-			ref.tell(trackMsg);
-		} else {
-			getContext().getLog().info("Creating context actor for {}", contextId);
-			ActorRef<ContextActor.Command> contextActor =
-					getContext().spawn(ContextActor.create(contextId), "context-" + contextId);
-			contextActor.tell(trackMsg);
-			contextIdToActor.put(contextId, contextActor);
+	
+	
+	private SessionActor onRegister(RegisterMessage Msg) {
+		String obsId = Msg.observation.getId();
+		
+		if (Msg.observation instanceof ISubject) {
+			contextActor = getContext().spawn(ContextActor.create(obsId), "context-" + obsId);
+			contextIdToActor.put(obsId, contextActor); 
 		}
+		
+		contextActor.tell(new SessionActor.RegisterMessage(Msg.observation));
+		
 		return this;
+
 	}
+
+
+/*
+	private SessionActor onRegister(RegisterMessage trackMsg) { 
+		String contextId = trackMsg.contextId; 
+		ActorRef<ContextActor.Command> ref = contextIdToActor.get(contextId);
+		if (ref != null) { ref.tell(trackMsg); }
+		else { 
+		getContext().getLog().info("Creating context actor for {}",contextId); 
+				ActorRef<ContextActor.Command> contextActor = getContext().spawn(ContextActor.create(contextId), "context-" + contextId);
+				contextActor.tell(trackMsg); 
+				contextIdToActor.put(contextId, contextActor); 
+			 }
+		return this; 
+	}
+	
+*/
+
 	
 	  private SessionActor onStart(Start str) {
 		    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");
