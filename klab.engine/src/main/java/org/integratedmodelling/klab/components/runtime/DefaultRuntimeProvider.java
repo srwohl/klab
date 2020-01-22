@@ -413,7 +413,6 @@ public class DefaultRuntimeProvider implements IRuntimeProvider {
 
 		ret.setGenerator(activity);
 		
-		// rootActorSystem.tell(new EngineActor.Start("start"));
 		
 		rootActorSystem.tell(new EngineActor.ObsMsg(ret));
 

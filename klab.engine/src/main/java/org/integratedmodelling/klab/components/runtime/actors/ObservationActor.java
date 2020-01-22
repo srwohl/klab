@@ -1,6 +1,7 @@
 package org.integratedmodelling.klab.components.runtime.actors;
 
 import org.integratedmodelling.klab.api.observations.IObservation;
+import org.integratedmodelling.klab.components.runtime.actors.SessionActor.RegisterObsMessage;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -18,42 +19,51 @@ import akka.actor.typed.PostStop;
  */
 public class ObservationActor extends AbstractBehavior<ObservationActor.Command> {
 	
-	private final String contextId;
-	private final String obsId;
+    IObservation observation;
 	
 	
-	public static Behavior<Command> create(String contextId, String obsId) {
-		return Behaviors.setup(context -> new ObservationActor(context, contextId, obsId));
+	public static Behavior<Command> create(String obsId) {
+		return Behaviors.setup(context -> new ObservationActor(context));
 	}
 
 
-	public ObservationActor(ActorContext<Command> context, String contextId, String obsId) {
+	public ObservationActor(ActorContext<Command> context) {
 		super(context);
-		this.contextId = contextId;
-		this.obsId = obsId;
 
-		context.getLog().info("observation actor {}-{} started", contextId, obsId);
+		context.getLog().info("observation actor {}-{} started");
 
 	}
 	
     //------------Messages------------------------------------------------
 	
 	public interface Command { };
+	
+    public static class EventMsg implements Command{
+        public final String name;
+
+        public EventMsg(String name) {
+            this.name = name;
+        }
+    }
 
 	//----------------------------Actions to take-------------------------------------------
 
 	@Override
 	public Receive<Command> createReceive() {
 		return newReceiveBuilder()
-
+                .onMessage(EventMsg.class, this::onEventmsg)
 				.onSignal(PostStop.class, signal -> onPostStop())
 				.build();
 	}
 
-
+	private ObservationActor onEventmsg(EventMsg Msg) {
+		getContext().getLog().info("Observation actor", Msg.name);
+		return this;
+	
+	}
 
 	private Behavior<Command> onPostStop() {
-		getContext().getLog().info("Observation actor {}-{} stopped", contextId, obsId);
+		getContext().getLog().info("Observation actor {}-{} stopped");
 		return Behaviors.stopped();
 	}
 	

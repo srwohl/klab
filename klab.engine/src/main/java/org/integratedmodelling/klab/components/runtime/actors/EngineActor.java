@@ -3,6 +3,7 @@ package org.integratedmodelling.klab.components.runtime.actors;
 
 
 import org.integratedmodelling.klab.api.observations.IObservation;
+import org.integratedmodelling.klab.engine.runtime.Session;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -14,15 +15,10 @@ import akka.actor.typed.javadsl.Receive;
 
 public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
 	
+	// Messages
+	
    public interface CommandEngine{}
    
-   public static class Start implements CommandEngine, SessionActor.Command{
-       public final String name;
-
-       public Start(String name) {
-           this.name = name;
-       }
-   }
    
    public static class ObsMsg implements CommandEngine, SessionActor.Command{
        public IObservation observation;
@@ -45,11 +41,9 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
     context.getLog().info("Engine Actor started");
   }
 
-  // No need to handle any messages
   @Override
   public Receive<CommandEngine> createReceive() {
     return newReceiveBuilder()
-    		.onMessage(Start.class, this::onStart)
     		.onMessage(ObsMsg.class, this::onObsMsg)
     		.onSignal(PostStop.class, signal -> onPostStop())
     		.build();
@@ -59,17 +53,10 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
 	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");
 
 	    System.out.println("session Actor: " + SessAct);
-	    SessAct.tell(new SessionActor.RegisterMessage(obs.observation));
+	    SessAct.tell(new SessionActor.RegisterObsMessage(obs.observation));
 	    return this;
 	  }
   
-  private EngineActor onStart(Start str) {
-	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");
-
-	    System.out.println("session Actor: " + SessAct);
-	    SessAct.tell(str);
-	    return this;
-	  }
 
   private EngineActor onPostStop() {
     getContext().getLog().info("Engine Actor stopped");
