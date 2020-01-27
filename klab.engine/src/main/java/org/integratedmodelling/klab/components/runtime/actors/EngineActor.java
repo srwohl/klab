@@ -3,6 +3,7 @@ package org.integratedmodelling.klab.components.runtime.actors;
 
 
 import org.integratedmodelling.klab.api.observations.IObservation;
+import org.integratedmodelling.klab.components.runtime.observations.Observation;
 import org.integratedmodelling.klab.engine.runtime.Session;
 
 import akka.actor.typed.ActorRef;
@@ -21,9 +22,9 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
    
    
    public static class ObsMsg implements CommandEngine, SessionActor.Command{
-       public IObservation observation;
+       public Observation observation;
 
-       public ObsMsg(IObservation observation) {
+       public ObsMsg(Observation observation) {
            this.observation = observation;
        }
    }
@@ -50,9 +51,9 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
   }
   
   private EngineActor onObsMsg(ObsMsg obs) {
-	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "session-actor");
+	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "s"+obs.observation.getId());
 
-	    System.out.println("session Actor: " + SessAct);
+	    getContext().getLog().info("session Actor: " + SessAct);
 	    SessAct.tell(new SessionActor.RegisterObsMessage(obs.observation));
 	    return this;
 	  }

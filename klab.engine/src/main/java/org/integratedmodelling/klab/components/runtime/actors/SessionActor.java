@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.integratedmodelling.klab.api.observations.IObservation;
 import org.integratedmodelling.klab.api.observations.ISubject;
+import org.integratedmodelling.klab.components.runtime.observations.Observation;
 import org.integratedmodelling.klab.components.runtime.observations.Subject;
 import org.integratedmodelling.klab.engine.runtime.EventBus;
 
@@ -39,18 +40,15 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 	public interface Command {}  
 
 	public static final class RegisterObsMessage implements SessionActor.Command, ContextActor.Command {
-		public final IObservation observation;
+		public final Observation observation;
 
 
-		public RegisterObsMessage(IObservation observation) {
+		public RegisterObsMessage(Observation observation) {
 			this.observation = observation;
 
 		}
 	}
 	
-
-
-
 	//------------------Actions to take-------------------------------------------------------------------
 
 	public Receive<Command> createReceive() {
@@ -63,10 +61,9 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 	
 	private SessionActor onRegister(RegisterObsMessage Msg) {
 		String obsId = Msg.observation.getId();
-		
+		ActorRef<ContextActor.Command> contextActor= getContext().spawn(ContextActor.create(obsId), "context-" + obsId);
 		if (Msg.observation.getContext()==null) {
 			getContext().getLog().info("Creating context actor for {}",obsId); 
-			contextActor = getContext().spawn(ContextActor.create(obsId), "context-" + obsId);
 			contextIdToActor.put(obsId, contextActor); 
 		}
 		getContext().getLog().info("send to the observation actor for creation"); 
