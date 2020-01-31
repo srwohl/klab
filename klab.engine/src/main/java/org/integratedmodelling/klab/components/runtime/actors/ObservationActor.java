@@ -30,8 +30,6 @@ public class ObservationActor extends AbstractBehavior<ObservationActor.Command>
 	public ObservationActor(ActorContext<Command> context) {
 		super(context);
 
-		context.getLog().info("observation actor {}-{} started");
-
 	}
 	
     //------------Messages------------------------------------------------
@@ -51,16 +49,17 @@ public class ObservationActor extends AbstractBehavior<ObservationActor.Command>
 	@Override
 	public Receive<Command> createReceive() {
 		return newReceiveBuilder()
-                .onMessage(EventMsg.class, this::onEventmsg)
+  //              .onMessage(EventMsg.class, this::onEventmsg)
 				.onSignal(PostStop.class, signal -> onPostStop())
 				.build();
 	}
-
+/*
 	private ObservationActor onEventmsg(EventMsg Msg) {
 		getContext().getLog().info("Observation actor", Msg.name);
 		return this;
 	
 	}
+	*/
 
 	private Behavior<Command> onPostStop() {
 		getContext().getLog().info("Observation actor {}-{} stopped");

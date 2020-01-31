@@ -18,7 +18,6 @@ public class ContextActor extends AbstractBehavior<ContextActor.Command>{
 
 	public ContextActor(ActorContext<Command> context) {
 		super(context);
-		context.getLog().info("Context Actor {} started");
 
 	}
 
@@ -40,21 +39,21 @@ public class ContextActor extends AbstractBehavior<ContextActor.Command>{
 	@Override
 	public Receive<Command> createReceive() {
 		return newReceiveBuilder()
-				.onMessage(RegisterObsMessage.class, this::handle)
+//				.onMessage(RegisterObsMessage.class, this::handle)
 				.onSignal(PostStop.class, signal -> onPostStop())
 				.build();
 	}
 	
-	private ContextActor handle(RegisterObsMessage trackMsg) {
-		String obsId= trackMsg.observation.getId();
-		ActorRef<ObservationActor.Command> ObsActor =
-				getContext()
-				.spawn(ObservationActor.create(obsId), "observation-" + trackMsg.observation.getId());
-		observationIdToActor.put(trackMsg.observation.getId(), ObsActor);
-		ObsActor.tell(new ObservationActor.EventMsg("obsId"));
-		return this;
-	
-	}
+	/*
+	 * private ContextActor handle(RegisterObsMessage trackMsg) { String obsId=
+	 * trackMsg.observation.getId(); ActorRef<ObservationActor.Command> ObsActor =
+	 * getContext() .spawn(ObservationActor.create(obsId), "observation-" +
+	 * trackMsg.observation.getId());
+	 * observationIdToActor.put(trackMsg.observation.getId(), ObsActor);
+	 * ObsActor.tell(new ObservationActor.EventMsg("obsId")); return this;
+	 * 
+	 * }
+	 */
 
 	
 	private ContextActor onPostStop() {

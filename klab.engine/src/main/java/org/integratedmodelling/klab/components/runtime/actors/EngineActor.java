@@ -39,7 +39,7 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
 
   private EngineActor(ActorContext<CommandEngine> context) {
     super(context);
-    context.getLog().info("Engine Actor started");
+   context.getLog().info("Engine Actor started");
   }
 
   @Override
@@ -52,8 +52,6 @@ public class EngineActor extends AbstractBehavior<EngineActor.CommandEngine> {
   
   private EngineActor onObsMsg(ObsMsg obs) {
 	    ActorRef<SessionActor.Command> SessAct = getContext().spawn(SessionActor.create(), "s"+obs.observation.getId());
-
-	    getContext().getLog().info("session Actor: " + SessAct);
 	    SessAct.tell(new SessionActor.RegisterObsMessage(obs.observation));
 	    return this;
 	  }

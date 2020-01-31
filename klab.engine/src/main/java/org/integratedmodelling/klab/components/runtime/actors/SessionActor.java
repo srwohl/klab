@@ -22,6 +22,7 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
     // Constuctor
 	public SessionActor(ActorContext<Command> context) {
 		super(context);
+		context.getLog().info("Session Actor started");
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -34,6 +35,7 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 	ActorRef<ContextActor.Command> contextActor;
 
 	private final Map<String, ActorRef<ContextActor.Command>> contextIdToActor = new HashMap<>();
+	private final Map<String, ActorRef<ObservationActor.Command>> observationIdToActor = new HashMap<>();
 
 	//---------------------------------- Messages------------------------------------------------
 
@@ -61,16 +63,22 @@ public class SessionActor extends AbstractBehavior<SessionActor.Command> {
 	
 	private SessionActor onRegister(RegisterObsMessage Msg) {
 		String obsId = Msg.observation.getId();
-		ActorRef<ContextActor.Command> contextActor= getContext().spawn(ContextActor.create(obsId), "context-" + obsId);
+		
 		if (Msg.observation.getContext()==null) {
 			getContext().getLog().info("Creating context actor for {}",obsId); 
+			ActorRef<ContextActor.Command> contextActor= getContext().spawn(ContextActor.create(obsId), "context-" + obsId);
 			contextIdToActor.put(obsId, contextActor); 
 		}
-		getContext().getLog().info("send to the observation actor for creation"); 
-		contextActor.tell(new RegisterObsMessage(Msg.observation));
+		else {
+			getContext().getLog().info("Creating observation actor for {}",obsId); 
+		ActorRef<ObservationActor.Command> ObsActor =
+				getContext()
+				.spawn(ObservationActor.create(obsId), "observation-" + obsId);
+		observationIdToActor.put(obsId, ObsActor);
 		
+		
+		}
 		return this;
-
 	}
 
 
