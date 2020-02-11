@@ -5138,11 +5138,16 @@ public class KimGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup_6 = (Group)cAlternatives.eContents().get(6);
 		private final Alternatives cAlternatives_6_0 = (Alternatives)cGroup_6.eContents().get(0);
 		private final Group cGroup_6_0_0 = (Group)cAlternatives_6_0.eContents().get(0);
-		private final Assignment cChangeAssignment_6_0_0_0 = (Assignment)cGroup_6_0_0.eContents().get(0);
-		private final Keyword cChangeChangeKeyword_6_0_0_0_0 = (Keyword)cChangeAssignment_6_0_0_0.eContents().get(0);
-		private final Keyword cInKeyword_6_0_0_1 = (Keyword)cGroup_6_0_0.eContents().get(1);
+		private final Keyword cChangeKeyword_6_0_0_0 = (Keyword)cGroup_6_0_0.eContents().get(0);
+		private final Alternatives cAlternatives_6_0_0_1 = (Alternatives)cGroup_6_0_0.eContents().get(1);
+		private final Assignment cChangeAssignment_6_0_0_1_0 = (Assignment)cAlternatives_6_0_0_1.eContents().get(0);
+		private final Keyword cChangeInKeyword_6_0_0_1_0_0 = (Keyword)cChangeAssignment_6_0_0_1_0.eContents().get(0);
+		private final Group cGroup_6_0_0_1_1 = (Group)cAlternatives_6_0_0_1.eContents().get(1);
+		private final Assignment cRateAssignment_6_0_0_1_1_0 = (Assignment)cGroup_6_0_0_1_1.eContents().get(0);
+		private final Keyword cRateRateKeyword_6_0_0_1_1_0_0 = (Keyword)cRateAssignment_6_0_0_1_1_0.eContents().get(0);
+		private final Keyword cOfKeyword_6_0_0_1_1_1 = (Keyword)cGroup_6_0_0_1_1.eContents().get(1);
 		private final Assignment cChangeAssignment_6_0_1 = (Assignment)cAlternatives_6_0.eContents().get(1);
-		private final Keyword cChangeNextKeyword_6_0_1_0 = (Keyword)cChangeAssignment_6_0_1.eContents().get(0);
+		private final Keyword cChangeChangedKeyword_6_0_1_0 = (Keyword)cChangeAssignment_6_0_1.eContents().get(0);
 		private final Assignment cConceptAssignment_6_1 = (Assignment)cGroup_6.eContents().get(1);
 		private final RuleCall cConceptSimpleConceptDeclarationParserRuleCall_6_1_0 = (RuleCall)cConceptAssignment_6_1.eContents().get(0);
 		private final Group cGroup_7 = (Group)cAlternatives.eContents().get(7);
@@ -5250,10 +5255,10 @@ public class KimGrammarAccess extends AbstractGrammarElementFinder {
 		//	UPPERCASE_ID | CAMELCASE_ID) | intIdentifier=INT) 'by' authority=(UPPERCASE_ID | UPPERCASE_PATH))? |
 		//	presence?='presence' 'of' concept=SimpleConceptDeclaration | count?='count' 'of' concept=SimpleConceptDeclaration |
 		//	distance?='distance' ('to' | 'from') concept=SimpleConceptDeclaration | probability?='probability' 'of'
-		//	concept=SimpleConceptDeclaration | assessment?='assessment' 'of' concept=SimpleConceptDeclaration | (change?='change'
-		//	'in' | change?='next') concept=SimpleConceptDeclaration | uncertainty?='uncertainty' 'of'
-		//	concept=SimpleConceptDeclaration | magnitude?='magnitude' 'of' concept=SimpleConceptDeclaration | level?='level' 'of'
-		//	concept=SimpleConceptDeclaration | type?='type' 'of' concept=SimpleConceptDeclaration |
+		//	concept=SimpleConceptDeclaration | assessment?='assessment' 'of' concept=SimpleConceptDeclaration | ('change'
+		//	(change?='in' | rate?='rate' 'of') | change?='changed') concept=SimpleConceptDeclaration | uncertainty?='uncertainty'
+		//	'of' concept=SimpleConceptDeclaration | magnitude?='magnitude' 'of' concept=SimpleConceptDeclaration | level?='level'
+		//	'of' concept=SimpleConceptDeclaration | type?='type' 'of' concept=SimpleConceptDeclaration |
 		//	observability?='observability' 'of' concept=SimpleConceptDeclaration | proportion?='proportion' 'of'
 		//	concept=SimpleConceptDeclaration (=> 'in' other=SimpleConceptDeclaration)? | percentage?='percentage' 'of'
 		//	concept=SimpleConceptDeclaration (=> 'in' other=SimpleConceptDeclaration)? | ratio?='ratio' 'of'
@@ -5268,17 +5273,17 @@ public class KimGrammarAccess extends AbstractGrammarElementFinder {
 		//UPPERCASE_ID | CAMELCASE_ID) | intIdentifier=INT) 'by' authority=(UPPERCASE_ID | UPPERCASE_PATH))? |
 		//presence?='presence' 'of' concept=SimpleConceptDeclaration | count?='count' 'of' concept=SimpleConceptDeclaration |
 		//distance?='distance' ('to' | 'from') concept=SimpleConceptDeclaration | probability?='probability' 'of'
-		//concept=SimpleConceptDeclaration | assessment?='assessment' 'of' concept=SimpleConceptDeclaration | (change?='change'
-		//'in' | change?='next') concept=SimpleConceptDeclaration | uncertainty?='uncertainty' 'of'
-		//concept=SimpleConceptDeclaration | magnitude?='magnitude' 'of' concept=SimpleConceptDeclaration | level?='level' 'of'
-		//concept=SimpleConceptDeclaration | type?='type' 'of' concept=SimpleConceptDeclaration | observability?='observability'
-		//'of' concept=SimpleConceptDeclaration | proportion?='proportion' 'of' concept=SimpleConceptDeclaration (=> 'in'
-		//other=SimpleConceptDeclaration)? | percentage?='percentage' 'of' concept=SimpleConceptDeclaration (=> 'in'
-		//other=SimpleConceptDeclaration)? | ratio?='ratio' 'of' concept=SimpleConceptDeclaration => 'to'
-		//other=SimpleConceptDeclaration | monetary?='monetary'? value?='value' 'of' concept=SimpleConceptDeclaration (=> 'over'
-		//other=SimpleConceptDeclaration)? | occurrence?='occurrence' 'of' concept=SimpleConceptDeclaration |
-		//authConcept?='identity' (stringIdentifier=(ID | STRING | UPPERCASE_ID | CAMELCASE_ID) | intIdentifier=INT) 'by'
-		//authority=(UPPERCASE_ID | UPPERCASE_PATH) | '(' declaration=Expression ')'
+		//concept=SimpleConceptDeclaration | assessment?='assessment' 'of' concept=SimpleConceptDeclaration | ('change'
+		//(change?='in' | rate?='rate' 'of') | change?='changed') concept=SimpleConceptDeclaration | uncertainty?='uncertainty'
+		//'of' concept=SimpleConceptDeclaration | magnitude?='magnitude' 'of' concept=SimpleConceptDeclaration | level?='level'
+		//'of' concept=SimpleConceptDeclaration | type?='type' 'of' concept=SimpleConceptDeclaration |
+		//observability?='observability' 'of' concept=SimpleConceptDeclaration | proportion?='proportion' 'of'
+		//concept=SimpleConceptDeclaration (=> 'in' other=SimpleConceptDeclaration)? | percentage?='percentage' 'of'
+		//concept=SimpleConceptDeclaration (=> 'in' other=SimpleConceptDeclaration)? | ratio?='ratio' 'of'
+		//concept=SimpleConceptDeclaration => 'to' other=SimpleConceptDeclaration | monetary?='monetary'? value?='value' 'of'
+		//concept=SimpleConceptDeclaration (=> 'over' other=SimpleConceptDeclaration)? | occurrence?='occurrence' 'of'
+		//concept=SimpleConceptDeclaration | authConcept?='identity' (stringIdentifier=(ID | STRING | UPPERCASE_ID |
+		//CAMELCASE_ID) | intIdentifier=INT) 'by' authority=(UPPERCASE_ID | UPPERCASE_PATH) | '(' declaration=Expression ')'
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//negated?=('not' | 'no')? name=ConceptReference (authConcept?='identified' 'as' (stringIdentifier=(ID | STRING |
@@ -5456,29 +5461,44 @@ public class KimGrammarAccess extends AbstractGrammarElementFinder {
 		//SimpleConceptDeclaration
 		public RuleCall getConceptSimpleConceptDeclarationParserRuleCall_5_2_0() { return cConceptSimpleConceptDeclarationParserRuleCall_5_2_0; }
 		
-		//(change?='change' 'in' | change?='next') concept=SimpleConceptDeclaration
+		//('change' (change?='in' | rate?='rate' 'of') | change?='changed') concept=SimpleConceptDeclaration
 		public Group getGroup_6() { return cGroup_6; }
 		
-		//(change?='change' 'in' | change?='next')
+		//('change' (change?='in' | rate?='rate' 'of') | change?='changed')
 		public Alternatives getAlternatives_6_0() { return cAlternatives_6_0; }
 		
-		//change?='change' 'in'
+		//'change' (change?='in' | rate?='rate' 'of')
 		public Group getGroup_6_0_0() { return cGroup_6_0_0; }
 		
-		//change?='change'
-		public Assignment getChangeAssignment_6_0_0_0() { return cChangeAssignment_6_0_0_0; }
-		
 		//'change'
-		public Keyword getChangeChangeKeyword_6_0_0_0_0() { return cChangeChangeKeyword_6_0_0_0_0; }
+		public Keyword getChangeKeyword_6_0_0_0() { return cChangeKeyword_6_0_0_0; }
+		
+		//(change?='in' | rate?='rate' 'of')
+		public Alternatives getAlternatives_6_0_0_1() { return cAlternatives_6_0_0_1; }
+		
+		//change?='in'
+		public Assignment getChangeAssignment_6_0_0_1_0() { return cChangeAssignment_6_0_0_1_0; }
 		
 		//'in'
-		public Keyword getInKeyword_6_0_0_1() { return cInKeyword_6_0_0_1; }
+		public Keyword getChangeInKeyword_6_0_0_1_0_0() { return cChangeInKeyword_6_0_0_1_0_0; }
 		
-		//change?='next'
+		//rate?='rate' 'of'
+		public Group getGroup_6_0_0_1_1() { return cGroup_6_0_0_1_1; }
+		
+		//rate?='rate'
+		public Assignment getRateAssignment_6_0_0_1_1_0() { return cRateAssignment_6_0_0_1_1_0; }
+		
+		//'rate'
+		public Keyword getRateRateKeyword_6_0_0_1_1_0_0() { return cRateRateKeyword_6_0_0_1_1_0_0; }
+		
+		//'of'
+		public Keyword getOfKeyword_6_0_0_1_1_1() { return cOfKeyword_6_0_0_1_1_1; }
+		
+		//change?='changed'
 		public Assignment getChangeAssignment_6_0_1() { return cChangeAssignment_6_0_1; }
 		
-		//'next'
-		public Keyword getChangeNextKeyword_6_0_1_0() { return cChangeNextKeyword_6_0_1_0; }
+		//'changed'
+		public Keyword getChangeChangedKeyword_6_0_1_0() { return cChangeChangedKeyword_6_0_1_0; }
 		
 		//concept=SimpleConceptDeclaration
 		public Assignment getConceptAssignment_6_1() { return cConceptAssignment_6_1; }
@@ -11354,10 +11374,10 @@ public class KimGrammarAccess extends AbstractGrammarElementFinder {
 	//	UPPERCASE_ID | CAMELCASE_ID) | intIdentifier=INT) 'by' authority=(UPPERCASE_ID | UPPERCASE_PATH))? |
 	//	presence?='presence' 'of' concept=SimpleConceptDeclaration | count?='count' 'of' concept=SimpleConceptDeclaration |
 	//	distance?='distance' ('to' | 'from') concept=SimpleConceptDeclaration | probability?='probability' 'of'
-	//	concept=SimpleConceptDeclaration | assessment?='assessment' 'of' concept=SimpleConceptDeclaration | (change?='change'
-	//	'in' | change?='next') concept=SimpleConceptDeclaration | uncertainty?='uncertainty' 'of'
-	//	concept=SimpleConceptDeclaration | magnitude?='magnitude' 'of' concept=SimpleConceptDeclaration | level?='level' 'of'
-	//	concept=SimpleConceptDeclaration | type?='type' 'of' concept=SimpleConceptDeclaration |
+	//	concept=SimpleConceptDeclaration | assessment?='assessment' 'of' concept=SimpleConceptDeclaration | ('change'
+	//	(change?='in' | rate?='rate' 'of') | change?='changed') concept=SimpleConceptDeclaration | uncertainty?='uncertainty'
+	//	'of' concept=SimpleConceptDeclaration | magnitude?='magnitude' 'of' concept=SimpleConceptDeclaration | level?='level'
+	//	'of' concept=SimpleConceptDeclaration | type?='type' 'of' concept=SimpleConceptDeclaration |
 	//	observability?='observability' 'of' concept=SimpleConceptDeclaration | proportion?='proportion' 'of'
 	//	concept=SimpleConceptDeclaration (=> 'in' other=SimpleConceptDeclaration)? | percentage?='percentage' 'of'
 	//	concept=SimpleConceptDeclaration (=> 'in' other=SimpleConceptDeclaration)? | ratio?='ratio' 'of'
