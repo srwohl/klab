@@ -18,13 +18,6 @@ import akka.actor.typed.PostStop;
  *
  */
 public class ObservationActor extends AbstractBehavior<ObservationActor.Command> {
-	
-    IObservation observation;
-	
-	
-	public static Behavior<Command> create(String obsId) {
-		return Behaviors.setup(context -> new ObservationActor(context));
-	}
 
 
 	public ObservationActor(ActorContext<Command> context) {
