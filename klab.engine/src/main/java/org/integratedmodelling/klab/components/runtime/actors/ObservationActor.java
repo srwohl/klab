@@ -11,20 +11,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.PostStop;
 
-/**
- * Create any observation actor as
- * 
- * @author ferdinando.villa
- *
- */
 public class ObservationActor extends AbstractBehavior<ObservationActor.Command> {
-	
-    IObservation observation;
-	
-	
-	public static Behavior<Command> create(String obsId) {
-		return Behaviors.setup(context -> new ObservationActor(context));
-	}
 
 
 	public ObservationActor(ActorContext<Command> context) {
