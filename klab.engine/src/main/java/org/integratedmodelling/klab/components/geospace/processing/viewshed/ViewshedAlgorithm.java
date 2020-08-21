@@ -9,8 +9,8 @@ import org.integratedmodelling.klab.api.observations.scale.space.ISpace;
 import org.integratedmodelling.klab.components.geospace.extents.Grid;
 import org.integratedmodelling.klab.components.geospace.extents.Shape;
 import org.integratedmodelling.klab.components.geospace.extents.Space;
+import org.locationtech.jts.geom.Point;
 
-import com.vividsolutions.jts.geom.Point;
 
 public class ViewshedAlgorithm {
 

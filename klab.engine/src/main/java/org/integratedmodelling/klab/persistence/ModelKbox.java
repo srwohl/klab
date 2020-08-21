@@ -44,8 +44,8 @@ import org.integratedmodelling.klab.scale.AbstractExtent;
 import org.integratedmodelling.klab.scale.Scale;
 import org.integratedmodelling.klab.utils.Escape;
 import org.integratedmodelling.klab.utils.Pair;
+import org.locationtech.jts.geom.Geometry;
 
-import com.vividsolutions.jts.geom.Geometry;
 
 public class ModelKbox extends ObservableKbox {
 

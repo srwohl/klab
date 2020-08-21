@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.integratedmodelling.klab.utils.Parameters;
+import org.locationtech.jts.geom.Geometry;
 
-import com.vividsolutions.jts.geom.Geometry;
 
 public class WeatherEvent {
 

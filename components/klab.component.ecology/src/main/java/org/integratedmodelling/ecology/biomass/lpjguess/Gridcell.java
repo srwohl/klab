@@ -8,14 +8,13 @@ import java.util.Map;
 import org.integratedmodelling.ecology.biomass.lpjguess.common.Utils;
 import org.integratedmodelling.klab.Units;
 import org.integratedmodelling.klab.api.knowledge.IConcept;
-import org.integratedmodelling.klab.api.observations.IState;
 import org.integratedmodelling.klab.api.observations.scale.space.ISpace;
 import org.integratedmodelling.klab.components.geospace.extents.Shape;
 import org.integratedmodelling.procsim.api.IConfiguration;
 import org.integratedmodelling.procsim.api.IConfiguration.Insolation;
 import org.integratedmodelling.procsim.api.IConfiguration.Phenology;
+import org.locationtech.jts.geom.Point;
 
-import com.vividsolutions.jts.geom.Point;
 
 /**
  * Status as of 3/2016:

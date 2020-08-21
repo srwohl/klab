@@ -36,8 +36,7 @@ import org.integratedmodelling.klab.utils.URLUtils;
 import org.integratedmodelling.weather.WeatherComponent;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
-
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFile;

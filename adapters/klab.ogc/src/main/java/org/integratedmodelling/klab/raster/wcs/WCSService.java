@@ -17,7 +17,7 @@ import java.util.Set;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.geotools.wcs.WCSConfiguration;
-import org.geotools.xml.Parser;
+import org.geotools.xsd.Parser;
 import org.integratedmodelling.klab.Klab;
 import org.integratedmodelling.klab.Logging;
 import org.integratedmodelling.klab.Version;

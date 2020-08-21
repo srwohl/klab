@@ -20,8 +20,8 @@ import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.factory.Hints;
 import org.geotools.jdbc.JDBCDataStore;
+import org.geotools.util.factory.Hints;
 import org.integratedmodelling.klab.Configuration;
 import org.integratedmodelling.klab.Logging;
 import org.integratedmodelling.klab.Urn;
@@ -33,7 +33,6 @@ import org.integratedmodelling.klab.raster.files.RasterValidator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.postgresql.util.PSQLException;
 
 public class Postgis {
 

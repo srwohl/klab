@@ -5,10 +5,10 @@ import org.integratedmodelling.klab.api.observations.scale.space.IEnvelope;
 import org.integratedmodelling.klab.api.observations.scale.space.IProjection;
 import org.integratedmodelling.klab.exceptions.KlabValidationException;
 import org.integratedmodelling.klab.utils.Pair;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import com.vividsolutions.jts.geom.Geometry;
 
 public class Envelope implements IEnvelope {
 
@@ -53,7 +53,7 @@ public class Envelope implements IEnvelope {
 		return true;
 	}
 
-	public static Envelope create(com.vividsolutions.jts.geom.Envelope envelope, Projection projection) {
+	public static Envelope create(org.locationtech.jts.geom.Envelope envelope, Projection projection) {
 		Envelope ret = new Envelope();
 		ret.envelope = new ReferencedEnvelope(envelope, projection.getCoordinateReferenceSystem());
 		ret.projection = projection;
@@ -270,7 +270,7 @@ public class Envelope implements IEnvelope {
 	}
 
 	public boolean intersects(IEnvelope envelope) {
-		return this.envelope.intersects((com.vividsolutions.jts.geom.Envelope) ((Envelope) envelope).envelope);
+		return this.envelope.intersects((org.locationtech.jts.geom.Envelope) ((Envelope) envelope).envelope);
 	}
 
 	@Override

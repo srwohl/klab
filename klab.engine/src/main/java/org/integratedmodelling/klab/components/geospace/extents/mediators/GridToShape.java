@@ -10,8 +10,8 @@ import org.integratedmodelling.klab.api.observations.scale.space.IShape.Type;
 import org.integratedmodelling.klab.components.geospace.extents.Grid;
 import org.integratedmodelling.klab.components.geospace.extents.Shape;
 import org.integratedmodelling.klab.utils.Pair;
+import org.locationtech.jts.geom.Point;
 
-import com.vividsolutions.jts.geom.Point;
 
 public class GridToShape implements IScaleMediator {
 
