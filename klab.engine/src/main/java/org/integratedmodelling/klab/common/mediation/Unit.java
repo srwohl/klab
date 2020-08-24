@@ -41,7 +41,7 @@ import org.integratedmodelling.klab.utils.MiscUtilities;
 import org.integratedmodelling.klab.utils.Pair;
 import org.integratedmodelling.klab.utils.Triple;
 
-import tec.uom.se.format.EBNFUnitFormat;
+import tec.uom.se.AbstractUnit;
 import tec.uom.se.quantity.QuantityDimension;
 import tec.uom.se.unit.ProductUnit;
 
@@ -105,7 +105,7 @@ public class Unit implements IUnit {
 
 		try {
 			// TODO check for correct unit format
-			unit = (javax.measure.Unit<?>) EBNFUnitFormat.getInstance().parse(string);
+			unit = (javax.measure.Unit<?>) AbstractUnit.parse(string);
 		} catch (Throwable e) {
 			// KLAB-156: Error getting the default unit
 			// catched in org.integratedmodelling.klab.model.Model.java:488
@@ -119,7 +119,7 @@ public class Unit implements IUnit {
 	}
 
 	public static Unit unitless() {
-		return create("1");
+		return new Unit(AbstractUnit.ONE);
 	}
 
 	/**
@@ -281,7 +281,7 @@ public class Unit implements IUnit {
 		String alternate = translations.get(unit.toString());
 		if (alternate != null) {
 			try {
-				return (javax.measure.Unit<?>) EBNFUnitFormat.getInstance().parse(alternate);
+				return (javax.measure.Unit<?>) AbstractUnit.parse(alternate);
 			} catch (ParserException e) {
 				throw new KlabInternalErrorException(e);
 			}
