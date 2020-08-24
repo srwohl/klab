@@ -15,17 +15,14 @@
  */
 package org.integratedmodelling.klab.common.mediation;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import javax.measure.converter.UnitConverter;
-import javax.measure.unit.Dimension;
-import javax.measure.unit.ProductUnit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Dimension;
+import javax.measure.UnitConverter;
+import javax.measure.format.ParserException;
 
 import org.integratedmodelling.kim.api.IValueMediator;
 import org.integratedmodelling.klab.Units;
@@ -44,6 +41,10 @@ import org.integratedmodelling.klab.utils.MiscUtilities;
 import org.integratedmodelling.klab.utils.Pair;
 import org.integratedmodelling.klab.utils.Triple;
 
+import tec.uom.se.format.EBNFUnitFormat;
+import tec.uom.se.quantity.QuantityDimension;
+import tec.uom.se.unit.ProductUnit;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Unit.
@@ -53,7 +54,7 @@ import org.integratedmodelling.klab.utils.Triple;
  */
 public class Unit implements IUnit {
 
-	javax.measure.unit.Unit<?> _unit;
+	javax.measure.Unit<?> _unit;
 	int _startLine;
 	int _endLine;
 	String statement;
@@ -95,7 +96,7 @@ public class Unit implements IUnit {
 		}
 
 		Pair<Double, String> pd = MiscUtilities.splitNumberFromString(string);
-		javax.measure.unit.Unit<?> unit = null;
+		javax.measure.Unit<?> unit = null;
 
 		double factor = 1.0;
 		if (pd.getFirst() != null) {
@@ -103,21 +104,22 @@ public class Unit implements IUnit {
 		}
 
 		try {
-			unit = (javax.measure.unit.Unit<?>) UnitFormat.getUCUMInstance().parseObject(string);
+			// TODO check for correct unit format
+			unit = (javax.measure.Unit<?>) EBNFUnitFormat.getInstance().parse(string);
 		} catch (Throwable e) {
 			// KLAB-156: Error getting the default unit
 			// catched in org.integratedmodelling.klab.model.Model.java:488
 			throw new KlabValidationException("Invalid unit: " + string);
 		}
 		if (factor != 1.0) {
-			unit = unit.times(factor);
+			unit = unit.multiply(factor);
 		}
 
 		return new Unit(unit, string);
 	}
 
 	public static Unit unitless() {
-		return new Unit(javax.measure.unit.Unit.ONE);
+		return create("1");
 	}
 
 	/**
@@ -161,7 +163,7 @@ public class Unit implements IUnit {
 	 * @param unit      the unit
 	 * @param statement the statement
 	 */
-	public Unit(javax.measure.unit.Unit<?> unit, String statement) {
+	public Unit(javax.measure.Unit<?> unit, String statement) {
 		this._unit = unit;
 		this.statement = statement;
 	}
@@ -171,7 +173,7 @@ public class Unit implements IUnit {
 	 *
 	 * @param unit the unit
 	 */
-	public Unit(javax.measure.unit.Unit<?> unit) {
+	public Unit(javax.measure.Unit<?> unit) {
 		this._unit = unit;
 		this.statement = unit.toString();
 	}
@@ -197,8 +199,13 @@ public class Unit implements IUnit {
 			throw new IllegalArgumentException("illegal conversion " + this + " to " + unit);
 		}
 
-		UnitConverter converter = ((Unit) unit).getUnit().getConverterTo(_unit);
-		return converter.convert(value.doubleValue());
+		UnitConverter converter;
+		try {
+			converter = ((Unit) unit)._unit.getConverterToAny(_unit);
+			return converter.convert(value.doubleValue());
+		} catch (Exception e) {
+			throw new KlabInternalErrorException(e);
+		}
 	}
 
 	/**
@@ -206,7 +213,7 @@ public class Unit implements IUnit {
 	 *
 	 * @return the unit
 	 */
-	public javax.measure.unit.Unit<?> getUnit() {
+	public javax.measure.Unit<?> getUnit() {
 		return _unit;
 	}
 
@@ -223,7 +230,7 @@ public class Unit implements IUnit {
 	/** {@inheritDoc} */
 	@Override
 	public IUnit multiply(IUnit unit) {
-		return new Unit(_unit.times(((Unit) unit)._unit));
+		return new Unit(_unit.multiply(((Unit) unit)._unit));
 	}
 
 	/** {@inheritDoc} */
@@ -235,7 +242,7 @@ public class Unit implements IUnit {
 	/** {@inheritDoc} */
 	@Override
 	public IUnit scale(double scale) {
-		return new Unit(_unit.times(scale));
+		return new Unit(_unit.multiply(scale));
 	}
 
 	@Override
@@ -248,16 +255,16 @@ public class Unit implements IUnit {
 		case AREAL:
 		case LINEAL:
 		case VOLUMETRIC:
-			return Dimension.LENGTH;
+			return QuantityDimension.LENGTH;
 		case TEMPORAL:
-			return Dimension.TIME;
+			return QuantityDimension.TIME;
 		case CONCEPTUAL:
 		case PUNTAL:
 		default:
 			break;
 
 		}
-		return Dimension.NONE;
+		return QuantityDimension.NONE;
 	}
 
 	/**
@@ -270,27 +277,27 @@ public class Unit implements IUnit {
 		return new Unit(standardize(this._unit));
 	}
 
-	private javax.measure.unit.Unit<?> standardize(javax.measure.unit.Unit<?> unit) {
+	private javax.measure.Unit<?> standardize(javax.measure.Unit<?> unit) {
 		String alternate = translations.get(unit.toString());
 		if (alternate != null) {
 			try {
-				return (javax.measure.unit.Unit<?>) UnitFormat.getUCUMInstance().parseObject(alternate);
-			} catch (ParseException e) {
+				return (javax.measure.Unit<?>) EBNFUnitFormat.getInstance().parse(alternate);
+			} catch (ParserException e) {
 				throw new KlabInternalErrorException(e);
 			}
 		}
 		if (unit instanceof ProductUnit<?>) {
-			List<Triple<javax.measure.unit.Unit<?>, Integer, Integer>> elements = new ArrayList<>();
+			List<Triple<javax.measure.Unit<?>, Integer, Integer>> elements = new ArrayList<>();
 			for (int i = 0; i < ((ProductUnit<?>) unit).getUnitCount(); i++) {
 				elements.add(new Triple<>(standardize(((ProductUnit<?>) unit).getUnit(i)),
 						((ProductUnit<?>) unit).getUnitPow(i), ((ProductUnit<?>) unit).getUnitRoot(i)));
 			}
 
-			javax.measure.unit.Unit<?> ret = null;
+			javax.measure.Unit<?> ret = null;
 			for (int i = 0; i < elements.size(); i++) {
-				javax.measure.unit.Unit<?> u = elements.get(i).getFirst().root(elements.get(i).getThird())
+				javax.measure.Unit<?> u = elements.get(i).getFirst().root(elements.get(i).getThird())
 						.pow(elements.get(i).getSecond());
-				ret = ret == null ? u : ret.times(u);
+				ret = ret == null ? u : ret.multiply(u);
 			}
 			return ret;
 
@@ -303,13 +310,13 @@ public class Unit implements IUnit {
 
 		Dimension dim = getUnitDimension(dimension);
 
-		if (dim == Dimension.NONE) {
+		if (dim == QuantityDimension.NONE) {
 			return new Pair<>(this, null);
 		}
 
-		List<javax.measure.unit.Unit<?>> components = new ArrayList<>();
+		List<javax.measure.Unit<?>> components = new ArrayList<>();
 		List<Integer> powers = new ArrayList<>();
-		javax.measure.unit.Unit<?> extentual = null;
+		javax.measure.Unit<?> extentual = null;
 		int dimensionality = dimension.dimensionality;
 		Dimension powered = dim.pow(dimensionality);
 		boolean raiseExtentual = false;
@@ -320,7 +327,7 @@ public class Unit implements IUnit {
 		int n = _unit instanceof ProductUnit ? ((ProductUnit<?>) _unit).getUnitCount() : 1;
 		for (int i = 0; i < n; i++) {
 
-			javax.measure.unit.Unit<?> component = _unit instanceof ProductUnit ? ((ProductUnit<?>) _unit).getUnit(i)
+			javax.measure.Unit<?> component = _unit instanceof ProductUnit ? ((ProductUnit<?>) _unit).getUnit(i)
 					: _unit;
 			int power = _unit instanceof ProductUnit ? ((ProductUnit<?>) _unit).getUnitPow(i) : 1;
 
@@ -356,9 +363,9 @@ public class Unit implements IUnit {
 		/*
 		 * reconstruct the unit with the new dimensionality
 		 */
-		javax.measure.unit.Unit<?> decontextualized = components.get(0).pow(powers.get(0));
+		javax.measure.Unit<?> decontextualized = components.get(0).pow(powers.get(0));
 		for (int i = 1; i < components.size(); i++) {
-			decontextualized = decontextualized.times(components.get(i).pow(powers.get(i)));
+			decontextualized = decontextualized.multiply(components.get(i).pow(powers.get(i)));
 		}
 
 		return new Pair<>(new Unit(decontextualized),

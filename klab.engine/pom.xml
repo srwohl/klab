@@ -693,11 +693,11 @@
 		<!-- https://mvnrepository.com/artifact/org.integratedmodelling/jscience -->
 		<!-- TODO find a way to use the official Maven package, which contains 
 			OGC implementations incompatible with Geotool's -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.integratedmodelling</groupId>
 			<artifactId>jscience</artifactId>
 			<version>4.3.1</version>
-		</dependency>
+		</dependency>  -->
 
 	</dependencies>
 </project>

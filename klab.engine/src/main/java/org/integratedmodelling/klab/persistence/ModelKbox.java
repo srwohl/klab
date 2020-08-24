@@ -30,6 +30,7 @@ import org.integratedmodelling.klab.api.runtime.monitoring.IMonitor;
 import org.integratedmodelling.klab.api.services.IModelService.IRankedModel;
 import org.integratedmodelling.klab.components.geospace.extents.Projection;
 import org.integratedmodelling.klab.components.geospace.extents.Shape;
+import org.integratedmodelling.klab.components.geospace.utils.JTSUtils;
 import org.integratedmodelling.klab.exceptions.KlabException;
 import org.integratedmodelling.klab.exceptions.KlabStorageException;
 import org.integratedmodelling.klab.model.Model;
@@ -468,7 +469,7 @@ public class ModelKbox extends ObservableKbox {
 					ret.setMaxSpatialScaleFactor(srs.getInt(24));
 					ret.setMinTimeScaleFactor(srs.getInt(25));
 					ret.setMaxTimeScaleFactor(srs.getInt(26));
-					Geometry geometry = srs.getGeometry(27);
+					Geometry geometry = JTSUtils.convert(srs.getGeometry(27));
 					if (!geometry.isEmpty()) {
 						ret.setShape(Shape.create(geometry, Projection.getLatLon())); // +
 					}

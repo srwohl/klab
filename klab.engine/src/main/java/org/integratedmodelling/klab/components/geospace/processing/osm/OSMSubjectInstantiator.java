@@ -29,6 +29,7 @@ import org.integratedmodelling.klab.api.provenance.IArtifact.Type;
 import org.integratedmodelling.klab.api.runtime.IContextualizationScope;
 import org.integratedmodelling.klab.components.geospace.extents.Projection;
 import org.integratedmodelling.klab.components.geospace.extents.Shape;
+import org.integratedmodelling.klab.components.geospace.utils.JTSUtils;
 import org.integratedmodelling.klab.data.Metadata;
 import org.integratedmodelling.klab.exceptions.KlabException;
 import org.integratedmodelling.klab.exceptions.KlabIOException;
@@ -193,7 +194,7 @@ public class OSMSubjectInstantiator implements IInstantiator, IExpression {
 
 				if ((type == null || type.contains("node") || type.contains("point")) && !data.getNodes().isEmpty()) {
 					for (OsmNode node : data.getNodes().valueCollection()) {
-						Geometry point = new GeometryBuilder().build(node);
+						Geometry point = JTSUtils.convert(new GeometryBuilder().build(node));
 						if (fixGeometries && (this.type.equals("polygon") || this.type.equals("area"))) {
 							point = point.buffer(bufferDistance);
 						}
@@ -237,7 +238,7 @@ public class OSMSubjectInstantiator implements IInstantiator, IExpression {
 						}
 						Geometry line = (fixGeometries && (this.type.equals("polygon") || this.type.equals("area")))
 								? getPolygon(way, data)
-								: new GeometryBuilder().build(way, data);
+								: JTSUtils.convert(new GeometryBuilder().build(way, data));
 						ISubject subject = makeSubject(semantics, line, way, context);
 						if (subject != null) {
 							ret.add(subject);
@@ -384,9 +385,11 @@ public class OSMSubjectInstantiator implements IInstantiator, IExpression {
 		List<LineString> results = new ArrayList<>();
 		try {
 			WayBuilderResult lines = wayBuilder.build(way, data);
-			results.addAll(lines.getLineStrings());
+			for (com.vividsolutions.jts.geom.LineString line : lines.getLineStrings()) {
+				results.addAll(JTSUtils.convert(line));
+			}
 			if (lines.getLinearRing() != null) {
-				results.add(lines.getLinearRing());
+				results.add(JTSUtils.convert(lines.getLinearRing()));
 			}
 		} catch (EntityNotFoundException e) {
 			// ignore
@@ -397,7 +400,7 @@ public class OSMSubjectInstantiator implements IInstantiator, IExpression {
 	private MultiPolygon getPolygon(OsmWay way, InMemoryMapDataSet data) {
 		try {
 			RegionBuilderResult region = regionBuilder.build(way, data);
-			return region.getMultiPolygon();
+			return JTSUtils.convert(region.getMultiPolygon());
 		} catch (EntityNotFoundException e) {
 			return null;
 		}
@@ -406,7 +409,7 @@ public class OSMSubjectInstantiator implements IInstantiator, IExpression {
 	private MultiPolygon getPolygon(OsmRelation relation, InMemoryMapDataSet data) {
 		try {
 			RegionBuilderResult region = regionBuilder.build(relation, data);
-			return region.getMultiPolygon();
+			return JTSUtils.convert(region.getMultiPolygon());
 		} catch (EntityNotFoundException e) {
 			return null;
 		}
