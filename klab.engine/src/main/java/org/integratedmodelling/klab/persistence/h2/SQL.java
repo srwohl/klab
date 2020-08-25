@@ -34,6 +34,7 @@ import java.util.Map;
 import org.integratedmodelling.klab.api.data.DataType;
 import org.integratedmodelling.klab.api.observations.scale.space.ISpace;
 import org.integratedmodelling.klab.components.geospace.extents.Shape;
+import org.integratedmodelling.klab.components.geospace.utils.JTSUtils;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -57,7 +58,7 @@ public class SQL {
 	public static String wrapPOD(Object o) {
 
 		if (o instanceof ISpace) {
-			o = ((Shape)((ISpace)o).getShape()).getStandardizedGeometry();
+			o = JTSUtils.convert(((Shape)((ISpace)o).getShape()).getStandardizedGeometry());
 		}
 		
 		if (o instanceof Geometry) {
