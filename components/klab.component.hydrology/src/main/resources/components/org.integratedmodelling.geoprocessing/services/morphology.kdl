@@ -68,3 +68,22 @@ export object findmaxima
 		
 	class org.integratedmodelling.geoprocessing.morphology.MaximaFinderInstantiator
 }
+
+export number gradient
+	
+	"Import a DEM and produce the map of gradient. The result can be the tan of the angle or degrees.
+	TODO: add choice of calculation mode."
+	 
+	 label 'Gradient'
+{
+	import number elevation
+		"The map of the digital elevation model"
+		
+	optional boolean angles
+		"If true, angles are computed as output instead of the tangent."
+		default true
+
+	geometry S2
+
+	class org.integratedmodelling.geoprocessing.morphology.GradientResolver
+}
