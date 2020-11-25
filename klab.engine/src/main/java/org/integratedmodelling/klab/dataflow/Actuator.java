@@ -48,6 +48,7 @@ import org.integratedmodelling.klab.api.monitoring.IMessage;
 import org.integratedmodelling.klab.api.observations.IConfiguration;
 import org.integratedmodelling.klab.api.observations.IDirectObservation;
 import org.integratedmodelling.klab.api.observations.IObservation;
+import org.integratedmodelling.klab.api.observations.IProcess;
 import org.integratedmodelling.klab.api.observations.IState;
 import org.integratedmodelling.klab.api.observations.scale.IScale;
 import org.integratedmodelling.klab.api.observations.scale.time.ITime;
@@ -79,6 +80,7 @@ import org.integratedmodelling.klab.engine.runtime.api.IKeyHolder;
 import org.integratedmodelling.klab.engine.runtime.api.IRuntimeScope;
 import org.integratedmodelling.klab.engine.runtime.api.ITaskTree;
 import org.integratedmodelling.klab.exceptions.KlabException;
+import org.integratedmodelling.klab.exceptions.KlabInternalErrorException;
 import org.integratedmodelling.klab.exceptions.KlabValidationException;
 import org.integratedmodelling.klab.model.Model;
 import org.integratedmodelling.klab.monitoring.Message;
@@ -630,7 +632,7 @@ public class Actuator implements IActuator {
 	@SuppressWarnings("unchecked")
 	public IArtifact runContextualizer(IContextualizer contextualizer, IObservable observable,
 			IContextualizable resource, IArtifact ret, IRuntimeScope ctx, IScale scale) {
-
+		
 		if (ctx.getMonitor().isInterrupted()) {
 			return Observation.empty(getObservable(), ctx);
 		}
@@ -655,6 +657,18 @@ public class Actuator implements IActuator {
 		 * INPUT for computations involving self.
 		 */
 		IArtifact self = ret;
+		if (self instanceof IProcess && observable.is(Type.QUALITY)) {
+			/*
+			 * recover the state this process is changing
+			 */
+			Pair<String, IArtifact> target = ctx.findArtifact(observable);
+			if (target == null) {
+				throw new KlabInternalErrorException(
+						"cannot retarget process contextualization to " + observable + ": state is missing");
+			}
+			
+			self = target.getSecond();
+		}
 
 		if (ret instanceof IState && contextualizer.getType().isState()) {
 			/*
@@ -675,11 +689,12 @@ public class Actuator implements IActuator {
 			 * parallelization instead of hard-coding a loop here.
 			 */
 			IArtifact result = Klab.INSTANCE.getRuntimeProvider().distributeComputation((IStateResolver) contextualizer,
-					(IState) ret, addParameters(ctx, self, resource), scale);
+					(IState) self, addParameters(ctx, self, resource), scale);
 
-			if (result != ret) {
-				ctx.swapArtifact(ret, result);
+			if (result != self) {
+				ctx.swapArtifact(self, result);
 			}
+			
 			ret = result;
 
 			if (this.model != null && ret instanceof Observation) {
