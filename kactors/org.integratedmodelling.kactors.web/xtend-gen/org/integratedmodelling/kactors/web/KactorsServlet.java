@@ -18,7 +18,6 @@ import org.integratedmodelling.kactors.web.KactorsWebSetup;
 public class KactorsServlet extends XtextServlet {
   private DisposableRegistry disposableRegistry;
   
-  @Override
   public void init() {
     try {
       super.init();
@@ -29,7 +28,6 @@ public class KactorsServlet extends XtextServlet {
     }
   }
   
-  @Override
   public void destroy() {
     if ((this.disposableRegistry != null)) {
       this.disposableRegistry.dispose();
