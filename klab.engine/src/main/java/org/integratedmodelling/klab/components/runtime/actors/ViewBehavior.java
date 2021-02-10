@@ -104,10 +104,13 @@ public class ViewBehavior {
 		// immutable copy of the original component installed by the actor after
 		// instrumenting it.
 		protected ViewComponent initializedComponent;
+		// save the scope to create the actions, this is fine as is because it's immutable for that purpose
+		private Scope scope;
 
 		public KlabWidgetActionExecutor(IActorIdentity<KlabMessage> identity, IParameters<String> arguments,
 				Scope scope, ActorRef<KlabMessage> sender, String callId) {
 			super(identity, arguments, scope, sender, callId);
+			this.scope = scope;
 		}
 
 		@Override
@@ -196,7 +199,7 @@ public class ViewBehavior {
 		 * @return
 		 */
 		public ViewComponent getViewComponent() {
-			this.component = createViewComponent(this.scope);
+			this.component = createViewComponent(scope);
 			return this.component;
 		}
 
@@ -273,7 +276,7 @@ public class ViewBehavior {
 			message.setContent(this.evaluateArgument(0, scope, "Confirm"));
 			message.getAttributes().putAll(getMetadata(arguments, scope));
 			session.getMonitor().post((msg) -> {
-				fire(msg.getPayload(ViewAction.class).isBooleanValue(), true, scope.semaphore);
+				fire(msg.getPayload(ViewAction.class).isBooleanValue(), true, scope);
 			}, IMessage.MessageClass.ViewActor, IMessage.Type.CreateViewComponent, message);
 		}
 	}

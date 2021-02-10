@@ -4,10 +4,12 @@ import org.integratedmodelling.kactors.model.KActorsValue;
 import org.integratedmodelling.kim.api.IKimExpression;
 import org.integratedmodelling.kim.api.IParameters;
 import org.integratedmodelling.klab.Actors;
+import org.integratedmodelling.klab.Klab;
 import org.integratedmodelling.klab.Urn;
 import org.integratedmodelling.klab.api.data.general.IExpression.CompilerOption;
 import org.integratedmodelling.klab.api.extensions.actors.Action;
 import org.integratedmodelling.klab.api.extensions.actors.Behavior;
+import org.integratedmodelling.klab.api.runtime.monitoring.IMonitor;
 import org.integratedmodelling.klab.components.runtime.actors.KlabActor.KlabMessage;
 import org.integratedmodelling.klab.components.runtime.actors.KlabActor.KlabMessage.Semaphore;
 import org.integratedmodelling.klab.components.runtime.actors.KlabActor.Scope;
@@ -84,14 +86,17 @@ public abstract class KlabActionExecutor {
 
     protected ActorRef<KlabMessage> sender;
     protected IParameters<String> arguments;
-    @Deprecated // REMOVE! just leave the appId and the monitor, take the rest by passing the scope in context
-    protected KlabActor.Scope scope;
+    // @Deprecated // REMOVE! just leave the appId and the monitor, take the rest by passing the
+    // scope in context
+    // protected KlabActor.Scope scope;
     protected IActorIdentity<KlabMessage> identity;
     protected Session session;
     // the ID of the call that generated this action in the k.Actors code. May be
     // null when the action is create by the
     // scheduler or other API.
     protected String callId;
+    protected IMonitor monitor;
+    protected String appId;
     ObjectExpression expression = null;
 
     protected final Boolean DEFAULT_FIRE = Boolean.TRUE;
@@ -101,7 +106,9 @@ public abstract class KlabActionExecutor {
         this.sender = sender;
         this.session = identity == null ? null : identity.getParentIdentity(Session.class);
         this.arguments = arguments;
-        this.scope = scope;
+        // this.scope = scope;
+        this.appId = scope.appId;
+        this.monitor = scope.runtimeScope == null ? Klab.INSTANCE.getRootMonitor() : scope.runtimeScope.getMonitor();
         this.identity = identity;
         this.callId = callId;
     }
@@ -113,25 +120,17 @@ public abstract class KlabActionExecutor {
 
     }
 
-    public void fire(Object value, boolean isFinal, Semaphore semaphore) {
+    public void fire(Object value, boolean isFinal, Scope scope) {
         if (scope.listenerId != null) {
-            this.sender.tell(new Fire(scope.listenerId, value, isFinal, scope.appId, semaphore));
+            this.sender.tell(new Fire(scope.listenerId, value, isFinal, scope.appId, scope.semaphore));
         }
     }
 
-    public void fail(Object... args) {
-        Semaphore semaphore = null;
+    public void fail(Scope scope, Object... args) {
         if (args != null) {
-            for (Object arg : args) {
-                if (arg instanceof Semaphore) {
-                    semaphore = (Semaphore) arg;
-                }
-            }
-            if (scope != null) {
-                scope.runtimeScope.getMonitor().error(args);
-            }
+            monitor.error(args);
         }
-        fire(false, true, semaphore);
+        fire(false, true, scope);
     }
 
     protected Object evaluateArgument(String argument, Scope scope) {
@@ -144,7 +143,7 @@ public abstract class KlabActionExecutor {
 
     protected void error(String message) {
         // TODO actor-specific error management
-        scope.runtimeScope.getMonitor().error(message);
+        monitor.error(message);
     }
 
     protected Object evaluateInContext(KActorsValue arg, Scope scope) {

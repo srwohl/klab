@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.integratedmodelling.klab.exceptions.KlabValidationException;
-import org.integratedmodelling.klab.utils.CollectionUtils;
-import org.integratedmodelling.klab.utils.StringUtil;
 import org.integratedmodelling.klab.utils.Utils;
 
 import groovy.lang.GroovyObjectSupport;
@@ -64,6 +62,7 @@ public class Table extends GroovyObjectSupport {
         Map<String,Object> row = data.get(key.toString());
         if (row == null) {
             row = new HashMap<>();
+            data.put(key.toString(), row);
         }
         row.put(col.toString(), value);
         columns.add(col.toString());
