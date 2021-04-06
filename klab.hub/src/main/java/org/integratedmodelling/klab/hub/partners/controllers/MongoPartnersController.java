@@ -1,9 +1,11 @@
-package org.integratedmodelling.klab.hub.nodes.controllers;
+package org.integratedmodelling.klab.hub.partners.controllers;
 
 import org.integratedmodelling.klab.api.API;
 import org.integratedmodelling.klab.hub.api.MongoNode;
+import org.integratedmodelling.klab.hub.api.MongoPartner;
 import org.integratedmodelling.klab.hub.exception.BadRequestException;
 import org.integratedmodelling.klab.hub.nodes.services.NodeService;
+import org.integratedmodelling.klab.hub.partners.services.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,54 +22,55 @@ import org.springframework.web.bind.annotation.RestController;
 import net.minidev.json.JSONObject;
 
 @RestController
-public class MongoNodeController {
+@RequestMapping(API.HUB.PARTNER_BASE)
+public class MongoPartnersController {
 	
-	private NodeService nodeService;
+	private PartnerService service;
 	
 	@Autowired
-	MongoNodeController(NodeService nodeService) {
-		this.nodeService = nodeService;
+	MongoPartnersController(PartnerService service) {
+		this.service = service;
 	}
 	
-	@GetMapping(value = API.HUB.NODE_BASE, produces = "application/json")
+	@GetMapping(value = "", produces = "application/json")
 	@PreAuthorize("hasRole('ROLE_SYSTEM') or hasRole('ROLE_ADMINSTRATOR')")
-	public ResponseEntity<?> getNodes() {
+	public ResponseEntity<?> getAll() {
 		JSONObject resp = new JSONObject();
-		resp.appendField("nodes", nodeService.getAll());
+		resp.appendField("Partners", service.getAll());
 		return new ResponseEntity<>(resp, HttpStatus.OK);
 	}
 	
-	@PutMapping(value = API.HUB.NODE_BASE_ID, produces = "application/json")
+	@PutMapping(value = "/{name}", produces = "application/json")
 	@PreAuthorize("hasRole('ROLE_SYSTEM')")
-	public ResponseEntity<Object> updateNode(@PathVariable("id") String name, @RequestBody MongoNode node) {
-		if(name.equals(node.getName())) {
-			nodeService.update(node);	
+	public ResponseEntity<Object> update(@PathVariable("name") String name, @RequestBody MongoPartner partner) {
+		if(name.equals(partner.getName())) {
+			service.update(partner);	
 		} else {
 			throw new BadRequestException("Node name does not match url");
 		}
-		return new ResponseEntity<>("The group has been updated successsfully", HttpStatus.OK);
+		return new ResponseEntity<>("The Partner has been updated successsfully", HttpStatus.OK);
 	}
 	
-	@DeleteMapping(value = API.HUB.NODE_BASE_ID, produces = "application/json")
+	@DeleteMapping(value = "/{name}", produces = "application/json")
 	@PreAuthorize("hasRole('ROLE_SYSTEM')")
-	public ResponseEntity<Object> deleteNode(@PathVariable("id") String name) {
-		nodeService.delete(name);
-		return new ResponseEntity<>("The Node has been deleted successsfully", HttpStatus.OK);
+	public ResponseEntity<Object> delete(@PathVariable("name") String name) {
+		service.delete(name);
+		return new ResponseEntity<>("The Partner has been deleted successsfully", HttpStatus.OK);
 	}
 	
-	@GetMapping(value= API.HUB.NODE_BASE_ID, produces = "application/json")
+	@GetMapping(value= "/{name}", produces = "application/json")
 	@PreAuthorize("hasRole('ROLE_SYSTEM') or hasRole('ROLE_ADMINISTRATOR')")
-	public ResponseEntity<Object> getNode(@PathVariable("id") String name) {
+	public ResponseEntity<Object> getByName(@PathVariable("name") String name) {
 		JSONObject resp = new JSONObject();
-		resp.appendField("node", nodeService.getByName(name));
+		resp.appendField("node", service.getByName(name));
 		return new ResponseEntity<>(resp, HttpStatus.OK);		
 	}
 	
-	@PostMapping(value=API.HUB.NODE_BASE, produces = "application/json")
+	@PostMapping(value="", produces = "application/json")
 	@PreAuthorize("hasRole('ROLE_SYSTEM')")
-	public ResponseEntity<Object> createNode(@RequestBody MongoNode node) {
-		node = nodeService.create(node);
-		return new ResponseEntity<>(node, HttpStatus.CREATED);
+	public ResponseEntity<Object> create(@RequestBody MongoPartner partner) {
+	    partner = service.create(partner);
+		return new ResponseEntity<>(partner, HttpStatus.CREATED);
 	}
 
 }

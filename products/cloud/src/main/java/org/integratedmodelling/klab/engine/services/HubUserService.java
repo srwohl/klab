@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.http.client.utils.URIBuilder;
@@ -22,6 +24,7 @@ import org.integratedmodelling.klab.auth.KlabUser;
 import org.integratedmodelling.klab.engine.Engine;
 import org.integratedmodelling.klab.engine.api.HubLoginResponse;
 import org.integratedmodelling.klab.engine.api.RemoteUserLoginResponse;
+import org.integratedmodelling.klab.engine.api.SessionActivityTree;
 import org.integratedmodelling.klab.engine.events.UserEventPublisher;
 import org.integratedmodelling.klab.engine.runtime.Session;
 import org.integratedmodelling.klab.exceptions.KlabAuthorizationException;
@@ -63,6 +66,8 @@ public class HubUserService implements RemoteUserService {
 
 	@Autowired
 	UserEventPublisher publisher;
+	
+	private Map<String, SessionActivityTree> activityTrees = new HashMap<>();
 	
 	/*
 	 * Generates a response entity a url to the session generated after succesful
@@ -202,11 +207,21 @@ public class HubUserService implements RemoteUserService {
 		
 		Session session = getSession(user);
 		
+		SessionActivityTree activityTree = new SessionActivityTree();
+		activityTree.setReference(session.getSessionReference());
+		activityTrees.put(session.getUsername(), activityTree);
+		
 		session.getState().addListener(new ISessionState.Listener() {
 
             @Override
             public void historyChanged(SessionActivity rootActivity, SessionActivity currentActivity) {
-                publisher.history(profile, session, rootActivity);
+                if(currentActivity == null && rootActivity.getParentActivityId() == null) {
+                    activityTree.updateWithActivity(rootActivity);
+                    publisher.history(profile, session, rootActivity);
+                } else {
+                    activityTree.updateWithActivity(currentActivity);
+                }
+                //publisher.history(profile, session, rootActivity);
                 
             }
 

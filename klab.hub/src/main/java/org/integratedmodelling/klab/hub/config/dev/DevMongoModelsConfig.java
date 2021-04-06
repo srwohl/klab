@@ -5,6 +5,7 @@ import org.integratedmodelling.klab.hub.commands.CreateInitialUsers;
 import org.integratedmodelling.klab.hub.repository.MongoGroupRepository;
 import org.integratedmodelling.klab.hub.repository.MongoLeverRepository;
 import org.integratedmodelling.klab.hub.repository.MongoNodeRepository;
+import org.integratedmodelling.klab.hub.repository.MongoPartnerRepository;
 import org.integratedmodelling.klab.hub.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -25,6 +26,7 @@ public class DevMongoModelsConfig implements ApplicationListener<ContextRefreshe
 	private PasswordEncoder passwordEncoder;
 	private MongoLeverRepository leverRepo;
 	private MongoNodeRepository nodeRepo;
+	private MongoPartnerRepository partnerRepo;
 
 	@Autowired
 	public DevMongoModelsConfig(MongoGroupRepository groupRepo,
@@ -32,7 +34,8 @@ public class DevMongoModelsConfig implements ApplicationListener<ContextRefreshe
 			LdapUserDetailsManager ldapUserDetailsManager,
 			PasswordEncoder passwordEncoder,
 			MongoLeverRepository leverRepo,
-			MongoNodeRepository nodeRepo) {
+			MongoNodeRepository nodeRepo,
+			MongoPartnerRepository partnerRepo) {
 		super();
 		this.groupRepo = groupRepo;
 		this.userRepository = userRepository;
@@ -40,6 +43,7 @@ public class DevMongoModelsConfig implements ApplicationListener<ContextRefreshe
 		this.passwordEncoder = passwordEncoder;
 		this.leverRepo = leverRepo;
 		this.nodeRepo = nodeRepo;
+		this.partnerRepo = partnerRepo;
 	}
 
 	@Override
@@ -54,7 +58,8 @@ public class DevMongoModelsConfig implements ApplicationListener<ContextRefreshe
 				passwordEncoder).execute();
 		
 		new CreateInitialLevers(leverRepo).execute();
-		new CreateIntialNodes(nodeRepo, groupRepo).execute();
+		new CreateInitialPartners(partnerRepo).execute();
+		new CreateIntialNodes(nodeRepo, groupRepo, partnerRepo).execute();
 	}
     
 

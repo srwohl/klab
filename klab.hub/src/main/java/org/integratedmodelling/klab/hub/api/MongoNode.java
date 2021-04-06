@@ -19,6 +19,9 @@ public class MongoNode extends IdentityModel{
     @DBRef(lazy = true)
 	private Set<MongoGroup> groups;
     
+    @DBRef(lazy = false)
+    private MongoPartner partner;
+    
 	public String getEmail() {
 		return email;
 	}
@@ -45,5 +48,11 @@ public class MongoNode extends IdentityModel{
     public void setUrl(String url) {
 		this.url = url;
 	}
+    public MongoPartner getPartner() {
+        return partner;
+    }
+    public void setPartner(MongoPartner partner) {
+        this.partner = partner;
+    }
 
 }

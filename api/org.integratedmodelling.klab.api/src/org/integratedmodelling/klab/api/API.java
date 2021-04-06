@@ -221,6 +221,10 @@ public interface API {
          */
         public static final String NODE_BASE = API_BASE + "/nodes";
         /**
+         * Base URL path for Partners of the hub.
+         */
+        public static final String PARTNER_BASE = API_BASE + "/partners";
+        /**
          * Base URL path for user resources on the hub.
          */
         public static final String USER_BASE = API_BASE + "/users";

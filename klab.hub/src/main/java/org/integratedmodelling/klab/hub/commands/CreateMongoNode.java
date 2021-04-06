@@ -15,7 +15,7 @@ public class CreateMongoNode {
 	}
 	
 	public MongoNode execute() {
-		return repository.insert(node);
+		return repository.save(node);
 	}
 
 }
