@@ -39,149 +39,141 @@ import org.springframework.core.env.MutablePropertySources;
  */
 public class Hub {
 
-	int port = IConfigurationService.DEFAULT_HUB_PORT;
-	private ConfigurableApplicationContext context;
-	private String contextPath = "/hub";
-	private IPartnerIdentity owner;
-	private ICertificate certificate;
+    int port = IConfigurationService.DEFAULT_HUB_PORT;
+    private ConfigurableApplicationContext context;
+    private String contextPath = "/hub";
+    private IPartnerIdentity owner;
+    private ICertificate certificate;
     FileCatalog<Group> defaultGroups;
-    
+
     public Hub() {
     };
-    
-	public Hub(IHubStartupOptions options, ICertificate certificate) {
-		this.certificate = certificate;
-		this.owner = HubAuthenticationManager.INSTANCE.authenticate(options, certificate);
-		// cert is prevalidated and we are the top consumers, so no further
-		// authentication needed
-	}
 
-	public String getLocalAddress() {
-		return "http://192.168.0.104:" + port + contextPath;
-	}
+    public Hub( IHubStartupOptions options, ICertificate certificate ) {
+        this.certificate = certificate;
+        this.owner = HubAuthenticationManager.INSTANCE.authenticate(options, certificate);
+        // cert is prevalidated and we are the top consumers, so no further
+        // authentication needed
+    }
 
-	public void run(String[] args) {
-		HubStartupOptions options = new HubStartupOptions();
-		options.initialize(args);
-	}
+    public String getLocalAddress() {
+        return "http://192.168.0.104:" + port + contextPath;
+    }
 
-	public static Hub start() {
-		return start(new HubStartupOptions());
-	}
+    public void run(String[] args) {
+        HubStartupOptions options = new HubStartupOptions();
+        options.initialize(args);
+    }
 
-	public static Hub start(IHubStartupOptions options) {
-		if(!options.isCloudConfig()) {
-			ICertificate certificate = null;
+    public static Hub start() {
+        return start(new HubStartupOptions());
+    }
 
-			if (options.getCertificateResource() != null) {
-				certificate = KlabCertificate.createFromClasspath(options.getCertificateResource());
-			} else {
-				File certFile = options.getCertificateFile();
-				certificate = certFile.exists() ? KlabCertificate.createFromFile(certFile)
-						: KlabCertificate.createDefault();
-			}
+    public static Hub start(IHubStartupOptions options) {
+        if (!options.isCloudConfig()) {
+            ICertificate certificate = null;
 
-			if (!certificate.isValid()) {
-				throw new KlabAuthorizationException("certificate is invalid: " + certificate.getInvalidityCause());
-			}
+            if (options.getCertificateResource() != null) {
+                certificate = KlabCertificate.createFromClasspath(options.getCertificateResource());
+            } else {
+                File certFile = options.getCertificateFile();
+                certificate = certFile.exists() ? KlabCertificate.createFromFile(certFile) : KlabCertificate.createDefault();
+            }
 
-			Hub ret = new Hub(options, certificate);
+            if (!certificate.isValid()) {
+                throw new KlabAuthorizationException("certificate is invalid: " + certificate.getInvalidityCause());
+            }
 
-			if (!ret.boot(options)) {
-				throw new KlabException("hub failed to start");
-			}
-			
-			
+            Hub ret = new Hub(options, certificate);
 
-			return ret;
-		} else {
-	
-			Hub ret = new Hub();
-			
-			if(!ret.boot()){
-				throw new KlabException("hub failed to start");
-			};
-	
-			return ret;
-		}
-	}
+            if (!ret.boot(options)) {
+                throw new KlabException("hub failed to start");
+            }
 
-	private boolean boot(IHubStartupOptions options) {
-		try {
-			this.port = options.getPort();
-			Map<String, Object> props = new HashMap<>();
-			props.put("server.port", "" + options.getPort());
-			props.put("spring.main.banner-mode", "off");
-			props.put("server.servlet.contextPath", contextPath);
-			SpringApplication app = new SpringApplication(HubApplication.class);
-			app.setDefaultProperties(props);
-			this.context = app.run(options.getArguments());	
-			
-			System.out.println("\n" + Logo.HUB_BANNER);
-			System.out.println(
-					"\nStartup successful: " + "k.LAB hub server" + " v" + Version.CURRENT + " on " + new Date());
-			
-			applicationStarted();
-			
-		} catch (Throwable e) {
-			Logging.INSTANCE.error(e);
-			return false;
-		}
-		return true;
-	}
-	
-	private boolean boot() {
-		try {
-			SpringApplication app = new SpringApplication(HubApplication.class);
-			this.context = app.run();
-			Environment environment = this.context.getEnvironment();
-			String certString = environment.getProperty("klab.certificate");
-			this.certificate = KlabCertificate.createFromString(certString);
-			setPropertiesFromEnvironment(environment);
-			this.owner = HubAuthenticationManager.INSTANCE.authenticate(new HubStartupOptions(), certificate);
-			
-			
-			System.out.println("\n" + Logo.HUB_BANNER);
-			System.out.println(
-					"\nStartup successful: " + "k.LAB hub server" + " v" + Version.CURRENT + " on " + new Date());
-			
-			applicationStarted();
-			
-		} catch (Throwable e) {
-			Logging.INSTANCE.error(e);
-			return false;
-		}
-		return true;
-	}
-	
-	private static void setPropertiesFromEnvironment(Environment environment) {
-		MutablePropertySources propSrcs =  ((ConfigurableEnvironment) environment).getPropertySources();
-		StreamSupport.stream(propSrcs.spliterator(), false)
-		        .filter(ps -> ps instanceof EnumerablePropertySource)
-		        .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
-		        .flatMap(Arrays::<String>stream)
-		        .forEach(propName -> Configuration.INSTANCE.getProperties().setProperty(propName, environment.getProperty(propName)));
-		Configuration.INSTANCE.save();
-		return;
-	}
-	
-	
-	/*
-	 * This is here because we can not catch the regular spring application events
-	 * and the result is creating a custom event.  This will trigger beans that need to be
-	 * run after the instances and spring app context have completed.  This order is slightly
-	 * confused depending on the boot.  Cloud config expects 
-	 */
-	@SuppressWarnings("unchecked")
-	private void applicationStarted() {
-		HubReady event = new HubReady(new Object());
-		HubEventPublisher<HubReady> eventAPublisher = (HubEventPublisher<HubReady> )context.getBean("hubEventPublisher");
-		eventAPublisher.publish(event);
-	}
+            return ret;
+        } else {
 
-	public void stop() {
-		
-		context.close();
-	}
+            Hub ret = new Hub();
+
+            if (!ret.boot()) {
+                throw new KlabException("hub failed to start");
+            } ;
+
+            return ret;
+        }
+    }
+
+    private boolean boot(IHubStartupOptions options) {
+        try {
+            this.port = options.getPort();
+            Map<String, Object> props = new HashMap<>();
+            props.put("server.port", "" + options.getPort());
+            props.put("spring.main.banner-mode", "off");
+            props.put("server.servlet.contextPath", contextPath);
+            SpringApplication app = new SpringApplication(HubApplication.class);
+            app.setDefaultProperties(props);
+            this.context = app.run(options.getArguments());
+
+            System.out.println("\n" + Logo.HUB_BANNER);
+            System.out.println("\nStartup successful: " + "k.LAB hub server" + " v" + Version.CURRENT + " on " + new Date());
+
+            applicationStarted();
+
+        } catch (Throwable e) {
+            Logging.INSTANCE.error(e);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean boot() {
+        try {
+            SpringApplication app = new SpringApplication(HubApplication.class);
+            this.context = app.run();
+            Environment environment = this.context.getEnvironment();
+            String certString = environment.getProperty("klab.certificate");
+            this.certificate = KlabCertificate.createFromString(certString);
+            setPropertiesFromEnvironment(environment);
+            this.owner = HubAuthenticationManager.INSTANCE.authenticate(new HubStartupOptions(), certificate);
+
+            System.out.println("\n" + Logo.HUB_BANNER);
+            System.out.println("\nStartup successful: " + "k.LAB hub server" + " v" + Version.CURRENT + " on " + new Date());
+
+            applicationStarted();
+
+        } catch (Throwable e) {
+            Logging.INSTANCE.error(e);
+            return false;
+        }
+        return true;
+    }
+
+    private static void setPropertiesFromEnvironment(Environment environment) {
+        MutablePropertySources propSrcs = ((ConfigurableEnvironment) environment).getPropertySources();
+        StreamSupport.stream(propSrcs.spliterator(), false).filter(ps -> ps instanceof EnumerablePropertySource)
+                .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames()).flatMap(Arrays::<String> stream)
+                .forEach(propName -> Configuration.INSTANCE.getProperties().setProperty(propName,
+                        environment.getProperty(propName)));
+        Configuration.INSTANCE.save();
+        return;
+    }
+
+    /*
+     * This is here because we can not catch the regular spring application events
+     * and the result is creating a custom event.  This will trigger beans that need to be
+     * run after the instances and spring app context have completed.  This order is slightly
+     * confused depending on the boot.
+     */
+    @SuppressWarnings("unchecked")
+    private void applicationStarted() {
+        HubReady event = new HubReady(new Object());
+        HubEventPublisher<HubReady> eventAPublisher = (HubEventPublisher<HubReady>) context.getBean("hubEventPublisher");
+        eventAPublisher.publish(event);
+    }
+
+    public void stop() {
+
+        context.close();
+    }
 
 }

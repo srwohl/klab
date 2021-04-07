@@ -19,30 +19,22 @@ public class HubStartupOptions implements IHubStartupOptions {
     @Option(name = "-dataDir", usage = "data directory (default: ~/.klab)", metaVar = "<DIRECTORY_PATH>")
     File dataDir = null;
 
-    @Option(
-            name = "-cert",
-            usage = "certificate file (default: <dataDir>/" + ICertificate.DEFAULT_HUB_CERTIFICATE_FILENAME + ")",
-            metaVar = "<FILE_PATH>")
+    @Option(name = "-cert", usage = "certificate file (default: <dataDir>/" + ICertificate.DEFAULT_HUB_CERTIFICATE_FILENAME
+            + ")", metaVar = "<FILE_PATH>")
     File certificateFile = null;
-    
-    @Option(
-            name = "-certResource",
-            usage = "certificate classpath resource (default null)",
-            metaVar = "<CLASSPATH_RESOURCE>")
+
+    @Option(name = "-certResource", usage = "certificate classpath resource (default null)", metaVar = "<CLASSPATH_RESOURCE>")
     String certificateResource = null;
 
-    @Option(
-            name = "-name",
-            usage = "hub name (overrides name in certificate)",
-            metaVar = "<SIMPLE_STRING>")
+    @Option(name = "-name", usage = "hub name (overrides name in certificate)", metaVar = "<SIMPLE_STRING>")
     String hubName = null;
-    
+
     @Option(name = "-port", usage = "http port for REST communication", metaVar = "<INT>")
     int port = IConfigurationService.DEFAULT_HUB_PORT;
 
     @Option(name = "-help", usage = "print command line options and exit")
     boolean help;
-    
+
     @Option(name = "-cloudConfig", usage = "allow for External Configuration of Node")
     boolean cloudConfig;
 
@@ -54,18 +46,18 @@ public class HubStartupOptions implements IHubStartupOptions {
     public HubStartupOptions() {
     }
 
-    public HubStartupOptions(String... args) {
-    	initialize(args);
+    public HubStartupOptions( String... args ) {
+        initialize(args);
     }
 
     @Override
     public String[] getArguments(String... additionalArguments) {
-    	List<String> args = new ArrayList<>(this.arguments);
-    	if (additionalArguments != null) {
-    		for (String additionalArgument : additionalArguments) {
-    			args.add(additionalArgument);
-    		}
-    	}
+        List<String> args = new ArrayList<>(this.arguments);
+        if (additionalArguments != null) {
+            for(String additionalArgument : additionalArguments) {
+                args.add(additionalArgument);
+            }
+        }
         return args.toArray(new String[args.size()]);
     }
 
@@ -96,7 +88,8 @@ public class HubStartupOptions implements IHubStartupOptions {
     @Override
     public File getCertificateFile() {
         if (certificateFile == null) {
-            certificateFile = new File(Configuration.INSTANCE.getDataPath() + File.separator + ICertificate.DEFAULT_HUB_CERTIFICATE_FILENAME);
+            certificateFile = new File(
+                    Configuration.INSTANCE.getDataPath() + File.separator + ICertificate.DEFAULT_HUB_CERTIFICATE_FILENAME);
         }
         return certificateFile;
     }
@@ -128,41 +121,38 @@ public class HubStartupOptions implements IHubStartupOptions {
         return certificateResource;
     }
 
-    
     public void setDataDir(File dataDir) {
         this.dataDir = dataDir;
     }
 
-    
     public void setCertificateFile(File certificateFile) {
         this.certificateFile = certificateFile;
     }
 
-    
     public void setCertificateResource(String certificateResource) {
         this.certificateResource = certificateResource;
     }
-    
+
     public void setPort(int port) {
         this.port = port;
     }
-    
+
     public void setHelp(boolean help) {
         this.help = help;
     }
-    
+
     public void setArguments(List<String> arguments) {
         this.arguments = arguments;
     }
 
-	@Override
-	public String getHubName() {
-		return hubName;
-	}
+    @Override
+    public String getHubName() {
+        return hubName;
+    }
 
-	@Override
-	public boolean isCloudConfig() {
-		return cloudConfig;
-	}
+    @Override
+    public boolean isCloudConfig() {
+        return cloudConfig;
+    }
 
 }

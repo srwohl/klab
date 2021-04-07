@@ -76,4 +76,16 @@ public class NodeServiceImpl implements NodeService {
 		return new GetMongoNodeById(id, nodeRepository).execute();
 	}
 
+    @Override
+    public void removePartnerFromNodes(String id) {
+        nodeRepository.findAll().forEach(node -> {
+            if(node.getPartner() != null) {
+                if(node.getPartner().getId().equals(id)) {
+                    node.setPartner(null);
+                    new UpdateMongoNode(node, nodeRepository).execute();
+                }
+            }
+        });
+    }
+
 }

@@ -20,7 +20,10 @@ public abstract class GenericModel {
 	@NotNull(message = "Name field cannot be null or blank")
 	@Indexed(unique=true)
     String name;
-
+	
+	public String getId() {
+	    return id;
+	}
 	public String getName() {
 		return name;
 	}

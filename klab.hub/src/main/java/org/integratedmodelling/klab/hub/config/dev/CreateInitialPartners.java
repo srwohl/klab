@@ -2,6 +2,7 @@ package org.integratedmodelling.klab.hub.config.dev;
 
 import org.integratedmodelling.klab.hub.api.MongoPartner;
 import org.integratedmodelling.klab.hub.commands.CreateMongoPartner;
+import org.integratedmodelling.klab.hub.commands.DeleteMongoPartner;
 import org.integratedmodelling.klab.hub.repository.MongoPartnerRepository;
 import org.joda.time.DateTime;
 
@@ -21,5 +22,6 @@ public class CreateInitialPartners {
         partner.setRegistrationDate(DateTime.now());
         partner.setEmail("admin@integratedmodelling.org");
         new CreateMongoPartner(partner, repository).execute();
+        new DeleteMongoPartner("im", repository).execute();
     }
 }

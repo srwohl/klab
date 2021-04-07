@@ -30,21 +30,21 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class HubApplication {
 
-	private static Hub hub;
-	
-	public void run(String[] args) {
-		HubStartupOptions options = new HubStartupOptions();
-		options.initialize(args);
-		hub = Hub.start(options);
-	}
+    private static Hub hub;
 
-	@PreDestroy
-	public void shutdown() {
-		hub.stop();
-	}
+    public void run(String[] args) {
+        HubStartupOptions options = new HubStartupOptions();
+        options.initialize(args);
+        hub = Hub.start(options);
+    }
 
-	public static void main(String args[]) {
-		new HubApplication().run(args);
-	}
+    @PreDestroy
+    public void shutdown() {
+        hub.stop();
+    }
+
+    public static void main(String args[]) {
+        new HubApplication().run(args);
+    }
 
 }

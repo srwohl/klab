@@ -5,5 +5,6 @@ import org.integratedmodelling.klab.hub.service.GenericHubService;
 
 public interface NodeService extends GenericHubService<MongoNode>{
 
-	void removeGroupFromNodes(String groupName);	
+	void removeGroupFromNodes(String groupName);
+	void removePartnerFromNodes(String id);
 }

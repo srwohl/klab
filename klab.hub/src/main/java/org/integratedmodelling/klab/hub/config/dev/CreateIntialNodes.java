@@ -39,7 +39,9 @@ public class CreateIntialNodes {
         anotherNode.setGroups(hSet);
         anotherNode.setName("outside");
         anotherNode.setUrl("http://172.17.0.1:8287/node");
-        anotherNode.setPartner(partnerRepo.findAll().iterator().next());
+        if(partnerRepo.findAll().iterator().hasNext()) {
+            anotherNode.setPartner(partnerRepo.findAll().iterator().next());    
+        }
         new CreateMongoNode(anotherNode, nodeRepo).execute();
 		
 	}
