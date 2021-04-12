@@ -1,5 +1,7 @@
 package org.integratedmodelling.klab.hub.tokens.services;
 
+import javax.ws.rs.BadRequestException;
+
 import org.integratedmodelling.klab.hub.api.TokenAuthentication;
 import org.integratedmodelling.klab.hub.api.TokenClickback;
 import org.integratedmodelling.klab.hub.api.TokenType;
@@ -75,5 +77,13 @@ public class RegistrationTokenServiceImpl implements RegistrationTokenService {
 	public void deleteToken(String tokenString) {
 		new DeleteAuthenticationToken(repository, tokenString).execute();
 	}
+
+    @Override
+    public TokenClickback getToken(String id, TokenType type) {
+        return repository.findByTokenString(id)
+                .map(TokenClickback.class::cast)
+                .filter(token -> token.getClickbackAction().getTokenType().equals(type))
+                .orElseThrow(()-> new BadRequestException("Token does not exists."));     
+    }
 
 }

@@ -3,12 +3,14 @@ package org.integratedmodelling.klab.hub.users.services;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
+import org.integratedmodelling.klab.hub.api.GroupEntry;
 import org.integratedmodelling.klab.hub.api.User;
 import org.integratedmodelling.klab.hub.api.User.AccountStatus;
 import org.integratedmodelling.klab.hub.commands.CreateLdapUser;
@@ -209,5 +211,20 @@ public class UserRegistrationServiceImpl implements UserRegistrationService{
 			return userAttributes;
 		}
 	}
+
+    @Override
+    public User registerInvitedUser(String username, String email, Set<GroupEntry> groups) {
+        Optional<User> pendingUser = checkIfUserPending(username, email);
+        if (pendingUser.isPresent()) {
+            return pendingUser.get();
+        } else {
+            User newUser = new User();
+            newUser.setUsername(username);
+            newUser.setEmail(email);
+            newUser.setGroupEntries(groups);
+            newUser = new CreatePendingUser(userRepository, newUser).execute();
+            return newUser;
+        }
+    }
 
 }

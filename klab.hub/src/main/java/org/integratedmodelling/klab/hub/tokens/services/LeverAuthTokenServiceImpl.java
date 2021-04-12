@@ -44,4 +44,10 @@ public class LeverAuthTokenServiceImpl implements LeverAuthTokenService {
 		
 	}
 
+    @Override
+    public TokenLever getToken(String id, TokenType type) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

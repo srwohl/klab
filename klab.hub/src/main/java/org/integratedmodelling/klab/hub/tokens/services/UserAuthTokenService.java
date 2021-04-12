@@ -7,10 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface UserAuthTokenService extends TokenBaseService<TokenAuthentication> {
-	public TokenAuthentication getUserAuthenticationToken(String username, String password);
-
-	public LoginResponse getAuthResponse(String username, String password);
-	
-	public LogoutResponse getLogoutResponse(String token);
-
+    public TokenAuthentication getUserAuthenticationToken(String username, String password);
+    public LoginResponse getAuthResponse(String username, String password);
+    public LogoutResponse getLogoutResponse(String token);
 }

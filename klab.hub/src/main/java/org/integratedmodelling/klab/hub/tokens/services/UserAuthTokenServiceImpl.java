@@ -110,4 +110,10 @@ public class UserAuthTokenServiceImpl implements UserAuthTokenService{
 		return new LogoutResponse(username);
 	}
 
+    @Override
+    public TokenAuthentication getToken(String id, TokenType type) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
