@@ -17,10 +17,12 @@ import org.integratedmodelling.kim.api.UnarySemanticOperator;
 import org.integratedmodelling.klab.Concepts;
 import org.integratedmodelling.klab.Models;
 import org.integratedmodelling.klab.Observables;
+import org.integratedmodelling.klab.Resources;
 import org.integratedmodelling.klab.api.data.IGeometry.Dimension;
 import org.integratedmodelling.klab.api.knowledge.IConcept;
 import org.integratedmodelling.klab.api.knowledge.IObservable;
 import org.integratedmodelling.klab.api.knowledge.IProject;
+import org.integratedmodelling.klab.api.model.IKimObject;
 import org.integratedmodelling.klab.api.model.IModel;
 import org.integratedmodelling.klab.api.model.INamespace;
 import org.integratedmodelling.klab.api.observations.IDirectObservation;
@@ -1381,18 +1383,30 @@ public class ResolutionScope implements IResolutionScope {
 
     /**
      * Visit the entire resolution tree and report the resolved observables in the order they have
-     * been resolved.
+     * been resolved. Remove any observable whose change is being resolved to avoid infinite
+     * recursion.
      * 
      * @param types
      * @return
      */
-    public Collection<ObservedConcept> getResolved(IKimConcept.Type... types) {
+    public Collection<ObservedConcept> getUnchangingResolved(IKimConcept.Type type) {
         LinkedHashSet<ObservedConcept> ret = new LinkedHashSet<>();
-        collectResolved(getRootScope(), types, ret);
+        collectResolved(getRootScope(), new Type[]{type}, ret);
+        HashSet<ObservedConcept> changes = new HashSet<>();
+        collectResolved(getRootScope(), new Type[]{Type.CHANGE}, changes);
+        if (this.observable != null && this.observable.is(Type.CHANGE)) {
+            changes.add(new ObservedConcept(this.observable));
+        }
+        for (ObservedConcept change : changes) {
+            IConcept changing = Observables.INSTANCE.getDescribedType(change.getObservable().getType());
+            if (changing != null) {
+                ret.remove(new ObservedConcept(changing));
+            }
+        }
         return ret;
     }
 
-    private void collectResolved(ResolutionScope scope, Type[] types, LinkedHashSet<ObservedConcept> ret) {
+    private void collectResolved(ResolutionScope scope, Type[] types, Set<ObservedConcept> ret) {
 
         for (Link link : scope.links) {
             collectResolved(link.getTarget(), types, ret);
@@ -1462,6 +1476,16 @@ public class ResolutionScope implements IResolutionScope {
                 ret.previousResolution.add(link.getSource());
             }
         }
+        if (scope.getObservable() != null && scope.getObservable().getOriginatingModelId() != null) {
+            /*
+             * resolve in namespace of originating model. Without this, change models won't resolve
+             * properly.
+             */
+            IKimObject obj = Resources.INSTANCE.getModelObject(scope.getObservable().getOriginatingModelId());
+            if (obj instanceof IModel) {
+                ret.resolutionNamespace = (Namespace) ((IModel) obj).getNamespace();
+            }
+        }
         return ret;
     }
 
@@ -1499,7 +1523,7 @@ public class ResolutionScope implements IResolutionScope {
     public void notifyResolution(IObservable observable, List<IRankedModel> result, Mode mode) {
         this.resolutions.put(new ObservedConcept(observable, mode), result);
     }
-    
+
     public Map<ObservedConcept, List<IRankedModel>> getResolutions() {
         return this.resolutions;
     }

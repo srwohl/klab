@@ -685,6 +685,10 @@ public class Concept extends Knowledge implements IConcept {
             Map<IConcept, IConcept> resolvedAbstractPredicates) {
 
         int distance = 0;
+        
+        if (concept == this || (concept.getDefinition().equals(getDefinition()))) {
+            return 0;
+        }
 
 //        String resolving = this.getDefinition();
 //        String resolved = concept.getDefinition();

@@ -173,7 +173,7 @@ public class Resolver {
                  * visit the scope (building a list of ResolvedObservable for all qualities that may
                  * change) and resolve their change in parent scope
                  */
-                for (ObservedConcept observable : parentScope.getResolved(Type.QUALITY)) {
+                for (ObservedConcept observable : parentScope.getUnchangingResolved(Type.QUALITY)) {
 
                     if (observable.getObservable().getValueOperators().size() > 0) {
                         // these are mere transformations and we don't need their change.
