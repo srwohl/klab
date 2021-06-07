@@ -210,20 +210,20 @@ public class VectorEncoder implements IResourceEncoder {
 
 			SimpleFeature feature = it.next();
 			Object shape = feature.getDefaultGeometryProperty().getValue();
-			if (shape instanceof com.vividsolutions.jts.geom.Geometry) {
+			if (shape instanceof org.locationtech.jts.geom.Geometry) {
 
-				if (((com.vividsolutions.jts.geom.Geometry) shape).isEmpty()) {
+				if (((org.locationtech.jts.geom.Geometry) shape).isEmpty()) {
 					continue;
 				}
 				
                 if ("true".equals(resource.getParameters().get("sanitize", "false").toString())) {
 //					shape = GeometrySanitizer.sanitize((com.vividsolutions.jts.geom.Geometry) shape);
-	                if (!((com.vividsolutions.jts.geom.Geometry) shape).isValid()) {
-	                    shape = ((com.vividsolutions.jts.geom.Geometry) shape).buffer(0);
+	                if (!((org.locationtech.jts.geom.Geometry) shape).isValid()) {
+	                    shape = ((org.locationtech.jts.geom.Geometry) shape).buffer(0);
 	                }
 				}
 
-				IShape objectShape = Shape.create((com.vividsolutions.jts.geom.Geometry) shape, originalProjection)
+				IShape objectShape = Shape.create((org.locationtech.jts.geom.Geometry) shape, originalProjection)
 						.transform(requestScale.getSpace().getProjection());
 
 				if (intersect) {

@@ -13,7 +13,7 @@ import org.integratedmodelling.klab.utils.Pair;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 public class Envelope implements IEnvelope {
 
