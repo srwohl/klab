@@ -43,8 +43,8 @@ public class BaseFlowWaterVolumeResolver implements IResolver<IProcess>, IExpres
     public IProcess resolve(IProcess baseflowProcess, IContextualizationScope context) throws KlabException {
         if (Configuration.INSTANCE.isEchoEnabled()) {
             ITime time = context.getScale().getTime();
-            String start = UtcTimeUtilities.toStringWithMinutes(new DateTime( time.getStart().getMilliseconds()));
-            String end = UtcTimeUtilities.toStringWithMinutes(new DateTime( time.getEnd().getMilliseconds()));
+            String start = UtcTimeUtilities.toStringWithMinutes(new DateTime(time.getStart().getMilliseconds()));
+            String end = UtcTimeUtilities.toStringWithMinutes(new DateTime(time.getEnd().getMilliseconds()));
             System.out.println("Enter BaseFlowWaterVolumeResolver at timestep : " + start + " -> " + end);
         }
         netInfiltratedWaterVolumeState = context.getArtifact("net_infiltrated_water_volume", IState.class);
@@ -68,19 +68,25 @@ public class BaseFlowWaterVolumeResolver implements IResolver<IProcess>, IExpres
             List<ILocator> sourceCells = new ArrayList<>();
             long xCells = grid.getXCells();
             long yCells = grid.getYCells();
-            
-            for(int y = 0; y < yCells; y++) {
-                for(int x = 0; x < xCells; x++) {
-                    Cell cell = grid.getCell(x, y);
+
+            for(ILocator locator : context.getScale()) {
+                Double d8 = flowdirectionState.get(locator, Double.class);
+                if (Observations.INSTANCE.isData(d8)) {
+
+                    Cell cell = locator.as(Cell.class);
+
+                    // get exit cells
                     Pair<Cell, Orientation> downstreamCellWithOrientation = Geospace.getDownstreamCellWithOrientation(cell,
                             flowdirectionState);
                     if (downstreamCellWithOrientation == null || downstreamCellWithOrientation.getFirst() == null) {
                         exitCells.add(context.getScale().at(cell));
                     }
+
                     // get source cells
-                    List<Cell> upstreamCells = Geospace.getUpstreamCells(cell, flowdirectionState, null);
+                    List<Cell> upstreamCells = Geospace.getUpstreamCells(cell, flowdirectionState,
+                            (c) -> streamPresenceState.get(c) != null);
                     if (upstreamCells.isEmpty()) {
-                        sourceCells.add(context.getScale().at(cell));
+                        sourceCells.add(locator);
                     }
                 }
             }
@@ -103,8 +109,8 @@ public class BaseFlowWaterVolumeResolver implements IResolver<IProcess>, IExpres
 
     private void calculateLsumMatrix(List<ILocator> sourceCells, IContextualizationScope scope, double[][] lSumMatrix) {
         for(ILocator locator : sourceCells) {
-        	
-        	Cell sourceCell = locator.as(Cell.class);
+
+            Cell sourceCell = locator.as(Cell.class);
             Double li = infiltratedWaterVolumeState.get(sourceCell, Double.class);
             int x = (int) sourceCell.getX();
             int y = (int) sourceCell.getY();
@@ -129,8 +135,7 @@ public class BaseFlowWaterVolumeResolver implements IResolver<IProcess>, IExpres
 
                 if (canProcess) {
 
-
-                	Double currentCellLi = infiltratedWaterVolumeState.get(locator, Double.class);
+                    Double currentCellLi = infiltratedWaterVolumeState.get(locator, Double.class);
 
                     if (Observations.INSTANCE.isData(currentCellLi)) {
 
@@ -154,7 +159,7 @@ public class BaseFlowWaterVolumeResolver implements IResolver<IProcess>, IExpres
     // ACHTUNG must pass locator
     private void walkUpAndProcess(ILocator locator, IContextualizationScope scope, double[][] bSumMatrix, double[][] lSumMatrix) {
         // process current cell
-    	Cell cell = locator.as(Cell.class);
+        Cell cell = locator.as(Cell.class);
         Boolean isStream = streamPresenceState.get(locator, Boolean.class);
 
         double bSum = 0.0;

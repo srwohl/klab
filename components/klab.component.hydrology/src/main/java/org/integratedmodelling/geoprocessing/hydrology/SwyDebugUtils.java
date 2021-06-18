@@ -42,7 +42,7 @@ public class SwyDebugUtils {
 					String name = cname + state.getObservable().getName();
 
 					String dateStr = f.format(new Date(timestamp));
-					String fileName = name + "_" + producingModel + ".asc";
+					String fileName = name + "_" + producingModel + ".tif";
 
 					File outFolder = new File(getDumpFolder(), dateStr);
 					if (!outFolder.exists()) {
