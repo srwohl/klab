@@ -109,7 +109,7 @@ public class InfiltratedWaterVolumeResolver implements IResolver<IProcess>, IExp
 
                 double lSumAvailable = 0.0;
 
-                System.out.println("Sono alla cella " + cnt++ + " di " + sourceCells.size());
+//                System.out.println("Sono alla cella " + cnt++ + " di " + sourceCells.size());
 
                 Double pet = petState.get(locator, Double.class);
                 Double runoff = runoffVolumeState.get(locator, Double.class);

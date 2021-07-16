@@ -80,16 +80,23 @@ public class ScsRunoffResolver implements IResolver<IProcess>, IExpression {
                     double p1 = -0.2 * rainParam;
                     double p2 = 0.8 * rainParam;
                     double expP1 = Math.exp(p1);
-                    double expP2 = Math.exp(p2);
+//                    double expP2 = Math.exp(p2);
+
+                    double enx = ExponentialIntegrals.enx(rainParam);
+                    double expResult = Math.exp(p2 + Math.log(enx));
+
                     runoff = eventsNum //
-                            * ((meanRainDepth - sScsCoeff) * expP1 + Math.pow(sScsCoeff, 2.0) / meanRainDepth
-                                    * expP2 * ExponentialIntegrals.enx(rainParam))//
+                            * ((meanRainDepth - sScsCoeff) * expP1 + Math.pow(sScsCoeff, 2.0) / meanRainDepth //
+                                    * expResult)//
+//                                    * expP2 * enx)//
                             * 25.4;// to mm
 
-//                    if (rainfall > 0 && runoff <= 0) {
-//                        Cell cell = locator.as(Cell.class);
-//                        System.out.println("X: " + cell.getX() + " Y: " + cell.getY());
-//                    }
+                    // due to numeric instabilities on lakes pixels which are not considered as
+                    // water
+                    if (runoff < 0) {
+                        runoff = 0;
+                    }
+
                 }
             } else {
                 runoff = Double.NaN;
@@ -98,8 +105,8 @@ public class ScsRunoffResolver implements IResolver<IProcess>, IExpression {
         }
 
         long ts = context.getScale().getTime().getStart().getMilliseconds();
-        SwyDebugUtils.dumpToRaster(ts, context, "ScsRunoffResolver", rainfallVolumeState,
-                streamPresenceState, curveNumberState, numberOfEventsState, runoffState);
+        SwyDebugUtils.dumpToRaster(ts, context, "ScsRunoffResolver", rainfallVolumeState, streamPresenceState, curveNumberState,
+                numberOfEventsState, runoffState);
 
         if (Configuration.INSTANCE.isEchoEnabled()) {
             System.out.println("Exit ScsRunoffResolver. Processed valid cells: " + validCells);
