@@ -27,11 +27,10 @@ public class PotentialEvapotranspiredWaterVolumeResolver implements IResolver<IP
     public IProcess resolve(IProcess evapotranspirationProcess, IContextualizationScope context) throws KlabException {
         if (Configuration.INSTANCE.isEchoEnabled()) {
             ITime time = context.getScale().getTime();
-            String start = UtcTimeUtilities.toStringWithMinutes(new DateTime( time.getStart().getMilliseconds()));
-            String end = UtcTimeUtilities.toStringWithMinutes(new DateTime( time.getEnd().getMilliseconds()));
+            String start = UtcTimeUtilities.toStringWithMinutes(new DateTime(time.getStart().getMilliseconds()));
+            String end = UtcTimeUtilities.toStringWithMinutes(new DateTime(time.getEnd().getMilliseconds()));
             System.out.println("Enter PotentialEvapotranspiredWaterVolumeResolver at timestep : " + start + " -> " + end);
         }
-
 
         IState cropCoefficientState = context.getArtifact("crop_coefficient", IState.class);
         IState maxTempState = context.getArtifact("maximum_temperature", IState.class);
@@ -53,7 +52,10 @@ public class PotentialEvapotranspiredWaterVolumeResolver implements IResolver<IP
             boolean isValid = Observations.INSTANCE.isData(kc) && Observations.INSTANCE.isData(tMax)
                     && Observations.INSTANCE.isData(tMin) && Observations.INSTANCE.isData(tAvg)
                     && Observations.INSTANCE.isData(solarRad) && Observations.INSTANCE.isData(rainfall);
-            
+
+            // FIXME for now the conversion might be wrong (kJ/m2/day), so divide for MJ
+            solarRad = solarRad / 1000.0;
+
             if (isValid) {
                 validCells++;
                 double referenceET = 0.0013 * 0.408 * solarRad * (tAvg + 17) * Math.pow((tMax - tMin - 0.0123 * rainfall), 0.76);
@@ -66,11 +68,11 @@ public class PotentialEvapotranspiredWaterVolumeResolver implements IResolver<IP
 //                }
             }
         }
-        
+
         long ts = context.getScale().getTime().getStart().getMilliseconds();
-        SwyDebugUtils.dumpToRaster(ts, context, "PetVolumeResolver", cropCoefficientState,
-                maxTempState, minTempState, tempState, solarRadiationState, rainfallState, petState);
-        
+        SwyDebugUtils.dumpToRaster(ts, context, "PetVolumeResolver", cropCoefficientState, maxTempState, minTempState, tempState,
+                solarRadiationState, rainfallState, petState);
+
         if (Configuration.INSTANCE.isEchoEnabled()) {
             System.out.println("Exit PotentialEvapotranspiredWaterVolumeResolver. Processed valid cells: " + validCells);
         }
