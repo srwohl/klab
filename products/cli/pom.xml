@@ -74,6 +74,12 @@
 			<groupId>org.integratedmodelling</groupId>
 			<artifactId>klab.component.landcover</artifactId>
 			<version>${klab.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.measure</groupId>
+					<artifactId>jsr-275</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.integratedmodelling</groupId>

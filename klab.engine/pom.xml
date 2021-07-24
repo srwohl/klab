@@ -27,14 +27,14 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-		  		<plugin>
-		  			<groupId>com.google.cloud.tools</groupId>
-		  			<artifactId>jib-maven-plugin</artifactId>
-		  			<configuration>
-		  				<!-- we don't want jib to execute on this module -->
-		  				<skip>true</skip>
-		  			</configuration>
-		      	</plugin>
+				<plugin>
+					<groupId>com.google.cloud.tools</groupId>
+					<artifactId>jib-maven-plugin</artifactId>
+					<configuration>
+						<!-- we don't want jib to execute on this module -->
+						<skip>true</skip>
+					</configuration>
+				</plugin>
 				<!-- <plugin> <artifactId>kotlin-maven-plugin</artifactId> <groupId>org.jetbrains.kotlin</groupId> 
 					<version>${kotlin.version}</version> <executions> <execution> <id>compile</id> 
 					<goals> <goal>compile</goal> </goals> <configuration> <sourceDirs> <sourceDir>${project.basedir}/src/main/java</sourceDir> 
@@ -85,19 +85,12 @@
 	</build>
 	<dependencies>
 
-<!-- 		<dependency>
-			<groupId>org.beryx</groupId>
-			<artifactId>text-io</artifactId>
-			<version>3.4.1</version>
-		</dependency> -->
+		<!-- <dependency> <groupId>org.beryx</groupId> <artifactId>text-io</artifactId> 
+			<version>3.4.1</version> </dependency> -->
 
- 		<!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils 
- 				<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
-			<version>1.9.4</version>
-		</dependency>
- -->
+		<!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils 
+			<dependency> <groupId>commons-beanutils</groupId> <artifactId>commons-beanutils</artifactId> 
+			<version>1.9.4</version> </dependency> -->
 
 		<!-- for tests. Remove at will. -->
 		<dependency>
@@ -117,16 +110,16 @@
 		<!-- Unirest, while redundant with Spring templates, removes a lot of pain 
 			when doing quick REST interactions -->
 		<dependency>
-		    <groupId>com.konghq</groupId>
-		    <artifactId>unirest-java</artifactId>
-		    <version>3.11.09</version>
-		    <classifier>standalone</classifier>
+			<groupId>com.konghq</groupId>
+			<artifactId>unirest-java</artifactId>
+			<version>3.11.09</version>
+			<classifier>standalone</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.konghq</groupId>
 			<artifactId>unirest-objectmapper-jackson</artifactId>
-		    <version>3.11.09</version>
-		    <classifier>standalone</classifier>
+			<version>3.11.09</version>
+			<classifier>standalone</classifier>
 		</dependency>
 
 		<!-- POI for Excel -->
@@ -764,11 +757,13 @@
 		<!-- https://mvnrepository.com/artifact/org.integratedmodelling/jscience -->
 		<!-- TODO find a way to use the official Maven package, which contains 
 			OGC implementations incompatible with Geotool's -->
+		<!-- https://mvnrepository.com/artifact/javax.measure/jsr-275 -->
 		<dependency>
-			<groupId>org.integratedmodelling</groupId>
-			<artifactId>jscience</artifactId>
-			<version>4.3.1</version>
+			<groupId>javax.measure</groupId>
+			<artifactId>jsr-275</artifactId>
+			<version>1.0.0</version>
 		</dependency>
+
 
 	</dependencies>
 </project>
