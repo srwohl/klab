@@ -4,13 +4,13 @@ package org.integratedmodelling.ml.legacy.riskwiz.graph;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.EdgeFactory;
-import org.jgrapht.graph.ClassBasedEdgeFactory;
+import org.integratedmodelling.contrib.jgrapht.Graph;
+import org.integratedmodelling.ml.legacy.riskwiz.ClassBasedEdgeFactory;
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
 
 
 public class RiskDirectedGraph<V, E> extends RiskGraph<V, E> implements
-        DirectedGraph<V, E> {
+        Graph<V, E> {
 
     /**
      * 

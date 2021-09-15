@@ -8,11 +8,12 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.integratedmodelling.contrib.jgrapht.Graphs;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNEdge;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskUndirectedGraph;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.algorithm.Algorithm;
-import org.jgrapht.Graphs;
+
 
 
 public class OrderedTriangulation extends Algorithm<BNNode, BNEdge> {
@@ -31,8 +32,7 @@ public class OrderedTriangulation extends Algorithm<BNNode, BNEdge> {
             Vector<Set<BNNode>> oredredSets,
             Vector< BNNode> oredredDecisionNodes) {
         cliques = new TreeSet<SJTVertex>();
-        RiskUndirectedGraph<BNNode, BNEdge> graphCopy = new RiskUndirectedGraph<BNNode, BNEdge>(
-                graph.getEdgeFactory());
+        RiskUndirectedGraph<BNNode, BNEdge> graphCopy = new RiskUndirectedGraph<BNNode, BNEdge>();
 
         // copy beliefNetwork
         Graphs.addGraph(graphCopy, graph);

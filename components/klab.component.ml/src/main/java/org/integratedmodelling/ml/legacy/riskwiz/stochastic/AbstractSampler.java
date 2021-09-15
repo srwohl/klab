@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import org.integratedmodelling.contrib.jgrapht.traverse.TopologicalOrderIterator;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BeliefNetwork;
 import org.integratedmodelling.ml.legacy.riskwiz.discretizer.DomainDiscretizer;
@@ -19,7 +20,6 @@ import org.integratedmodelling.ml.legacy.riskwiz.pfunction.IFunction;
 import org.integratedmodelling.ml.legacy.riskwiz.pfunction.TabularFunction;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.PT;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.TableFactory;
-import org.jgrapht.traverse.TopologicalOrderIterator;
 
 
 public abstract class AbstractSampler implements IInference {

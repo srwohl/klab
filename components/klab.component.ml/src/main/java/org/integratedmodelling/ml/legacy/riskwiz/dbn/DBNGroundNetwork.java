@@ -36,10 +36,10 @@ package org.integratedmodelling.ml.legacy.riskwiz.dbn;
 
 import java.util.Vector;
 
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNEdge;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BeliefNetwork;
-import org.jgrapht.EdgeFactory;
 
 
 /**

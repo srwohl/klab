@@ -4,12 +4,13 @@ package org.integratedmodelling.ml.legacy.riskwiz.influence.jensen;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.integratedmodelling.contrib.jgrapht.Graphs;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNEdge;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskDirectedGraph;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskUndirectedGraph;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.algorithm.RemoveDirectionality;
-import org.jgrapht.Graphs;
+
 
  
 public class Moralization {
@@ -20,8 +21,7 @@ public class Moralization {
     public RiskUndirectedGraph<BNNode, BNEdge>   execute(RiskDirectedGraph<BNNode, BNEdge>  srcGarph) {
         // add moral edges
 		
-        RiskDirectedGraph<BNNode, BNEdge>  copyGraph = new RiskDirectedGraph<BNNode, BNEdge>(
-                srcGarph.getEdgeFactory());
+        RiskDirectedGraph<BNNode, BNEdge>  copyGraph = new RiskDirectedGraph<BNNode, BNEdge>();
 		  
         Graphs.addGraph(copyGraph, srcGarph);		 
         removeInformationLinks(copyGraph);

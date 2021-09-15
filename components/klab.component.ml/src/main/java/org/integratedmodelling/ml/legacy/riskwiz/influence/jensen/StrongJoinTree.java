@@ -41,6 +41,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.integratedmodelling.contrib.jgrapht.traverse.BreadthFirstIterator;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BeliefNetwork;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.DiscreteDomain;
@@ -55,7 +56,6 @@ import org.integratedmodelling.ml.legacy.riskwiz.pt.map.DomainMap2;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.map.FMarginalizationMap;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.map.FastMap2;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.map.SubtableFastMap2;
-import org.jgrapht.traverse.BreadthFirstIterator;
 
 
 /**

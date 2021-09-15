@@ -3,8 +3,9 @@ package org.integratedmodelling.ml.legacy.riskwiz.graph;
 
 import java.util.Set;
 
-import org.jgrapht.EdgeFactory;
-import org.jgrapht.graph.AbstractBaseGraph;
+import org.integratedmodelling.contrib.jgrapht.graph.AbstractBaseGraph;
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
+import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNodeFactory;
 
  
 public class RiskGraph<V, E > extends AbstractBaseGraph<V, E > {
@@ -16,7 +17,7 @@ public class RiskGraph<V, E > extends AbstractBaseGraph<V, E > {
 
     public RiskGraph(EdgeFactory<V, E> ef, boolean allowMultipleEdges,
             boolean allowLoops) {
-        super(ef, allowMultipleEdges, allowLoops);
+        super();
         // TODO Auto-generated constructor stub
     }
 	

@@ -33,10 +33,8 @@
 
 package org.integratedmodelling.ml.legacy.riskwiz.bn;
 
-
-import org.jgrapht.EdgeFactory;
-import org.jgrapht.graph.ClassBasedEdgeFactory;
-
+import org.integratedmodelling.ml.legacy.riskwiz.ClassBasedEdgeFactory;
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
 
 /**
  * @author Sergey Krivov

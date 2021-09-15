@@ -34,8 +34,8 @@
 package org.integratedmodelling.ml.legacy.riskwiz.bn;
 
 
+import org.integratedmodelling.ml.legacy.riskwiz.VertexFactory;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.DiscreteDomain;
-import org.jgrapht.VertexFactory;
 
 
 /**
@@ -81,6 +81,11 @@ public class BNNodeFactory implements  VertexFactory<BNNode> {
     public BNNode createVertex(String name, double from, double to, int numberOfIntervals, BNNode.NodeType nodeType) {
         nodeCount++;
         return new BNNode(name, from, to, numberOfIntervals, nodeType);
+    }
+
+    @Override
+    public BNNode get() {
+        return createVertex();
     }
 
 }

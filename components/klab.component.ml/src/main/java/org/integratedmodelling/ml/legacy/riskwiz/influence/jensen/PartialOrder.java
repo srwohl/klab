@@ -38,11 +38,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
+import org.integratedmodelling.contrib.jgrapht.traverse.TopologicalOrderIterator;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNEdge;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BeliefNetwork;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.algorithm.Algorithm;
-import org.jgrapht.traverse.TopologicalOrderIterator;
 
 
 /**

@@ -34,10 +34,10 @@
 package org.integratedmodelling.ml.legacy.riskwiz.dbn.sdbn;
 
 
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNEdge;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.dbn.DBNGroundNetwork;
-import org.jgrapht.EdgeFactory;
 
 
 /**

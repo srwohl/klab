@@ -36,9 +36,9 @@ package org.integratedmodelling.ml.legacy.riskwiz.dbn.sdbn;
 
 import java.util.Vector;
 
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.GenericBeliefNetwork;
-import org.jgrapht.EdgeFactory;
 
 
 /**

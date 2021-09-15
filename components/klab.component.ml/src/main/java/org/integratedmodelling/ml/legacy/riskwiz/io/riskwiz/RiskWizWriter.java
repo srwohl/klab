@@ -11,16 +11,16 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import org.integratedmodelling.contrib.jgrapht.traverse.TopologicalOrderIterator;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
-import org.integratedmodelling.ml.legacy.riskwiz.bn.BeliefNetwork;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode.DomainType;
+import org.integratedmodelling.ml.legacy.riskwiz.bn.BeliefNetwork;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.ContinuousDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.DiscreteDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.IntervalDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.LabelDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.io.IOUtil;
 import org.integratedmodelling.ml.legacy.riskwiz.pfunction.TabularFunction;
-import org.jgrapht.traverse.TopologicalOrderIterator;
 
 
 public class RiskWizWriter {

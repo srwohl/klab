@@ -4,13 +4,14 @@ package org.integratedmodelling.ml.legacy.riskwiz.graph;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jgrapht.EdgeFactory;
-import org.jgrapht.UndirectedGraph;
-import org.jgrapht.graph.ClassBasedEdgeFactory;
+import org.integratedmodelling.contrib.jgrapht.Graph;
+import org.integratedmodelling.ml.legacy.riskwiz.ClassBasedEdgeFactory;
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
+
 
 
 public class RiskUndirectedGraph<V, E > extends RiskGraph<V, E> implements
-        UndirectedGraph<V, E> {
+        Graph<V, E> {
 
     /**
      * 
@@ -30,6 +31,10 @@ public class RiskUndirectedGraph<V, E > extends RiskGraph<V, E> implements
      */
     public RiskUndirectedGraph(EdgeFactory<V, E> ef) {
         super(ef, false, false);
+    }
+    
+    public RiskUndirectedGraph() {
+        super(new BN, false, false);
     }
 
     /**

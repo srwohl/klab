@@ -6,12 +6,11 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import org.integratedmodelling.contrib.jgrapht.Graphs;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNEdge;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskUndirectedGraph;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.algorithm.Algorithm;
-import org.jgrapht.Graphs;
-
 
 public class Triangulation extends Algorithm<BNNode, BNEdge> {
 
@@ -26,8 +25,7 @@ public class Triangulation extends Algorithm<BNNode, BNEdge> {
     public RiskUndirectedGraph<BNNode, BNEdge> execute(
             RiskUndirectedGraph<BNNode, BNEdge> graph) {
         cliques = new HashSet<JTVertexHugin>();
-        RiskUndirectedGraph<BNNode, BNEdge> graphCopy = new RiskUndirectedGraph<BNNode, BNEdge>(
-                graph.getEdgeFactory());
+        RiskUndirectedGraph<BNNode, BNEdge> graphCopy = new RiskUndirectedGraph<BNNode, BNEdge>();
 
         // copy beliefNetwork
         Graphs.addGraph(graphCopy, graph);

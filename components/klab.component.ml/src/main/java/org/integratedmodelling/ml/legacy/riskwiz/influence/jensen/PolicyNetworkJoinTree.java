@@ -38,6 +38,7 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
 
+import org.integratedmodelling.contrib.jgrapht.Graphs;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNode;
 import org.integratedmodelling.ml.legacy.riskwiz.bn.BeliefNetwork;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.DiscreteDomain;
@@ -49,7 +50,6 @@ import org.integratedmodelling.ml.legacy.riskwiz.pt.TableFactory;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.map.FMarginalizationMap;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.map.FastMap2;
 import org.integratedmodelling.ml.legacy.riskwiz.pt.map.SubtableFastMap2;
-import org.jgrapht.Graphs;
 
 
 /**

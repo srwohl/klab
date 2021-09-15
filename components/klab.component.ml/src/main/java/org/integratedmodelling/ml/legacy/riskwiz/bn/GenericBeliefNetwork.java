@@ -36,11 +36,11 @@ package org.integratedmodelling.ml.legacy.riskwiz.bn;
 
 import java.util.Set;
 
+import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.DiscreteDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.IntervalDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.LabelDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskDirectedGraph;
-import org.jgrapht.EdgeFactory;
 
 
 /**
