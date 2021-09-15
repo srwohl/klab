@@ -1,9 +1,9 @@
 package org.integratedmodelling.ml.legacy.riskwiz.graph.algorithm;
 
 
+import org.integratedmodelling.contrib.jgrapht.Graphs;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskDirectedGraph;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskUndirectedGraph;
-import org.jgrapht.Graphs;
 
 
 public class RemoveDirectionality<V, E > {

@@ -4,6 +4,7 @@ package org.integratedmodelling.ml.legacy.riskwiz.bn;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
+import java.util.function.Supplier;
 
 import org.integratedmodelling.ml.legacy.riskwiz.domain.ContinuousDomain;
 import org.integratedmodelling.ml.legacy.riskwiz.domain.DiscreteDomain;
@@ -31,6 +32,8 @@ public class BNNode implements Comparable<BNNode> {
     public enum NodeType {
         probabilistic, noisymax, deterministic, utility, decision
     }
+
+    private static Supplier<BNNode> supplier = new BNNodeFactory();
 
     private DomainType domType;
     private NodeType nodeType;
@@ -611,6 +614,10 @@ public class BNNode implements Comparable<BNNode> {
 
     public void setExpression(boolean isExpression) {
         this.isExpression = isExpression;
+    }
+
+    public static Supplier<BNNode> getSupplier() {
+        return supplier ;
     }
 	 
 }

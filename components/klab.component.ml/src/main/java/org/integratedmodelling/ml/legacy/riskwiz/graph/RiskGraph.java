@@ -2,22 +2,21 @@ package org.integratedmodelling.ml.legacy.riskwiz.graph;
 
 
 import java.util.Set;
+import java.util.function.Supplier;
 
+import org.integratedmodelling.contrib.jgrapht.GraphType;
 import org.integratedmodelling.contrib.jgrapht.graph.AbstractBaseGraph;
-import org.integratedmodelling.ml.legacy.riskwiz.EdgeFactory;
-import org.integratedmodelling.ml.legacy.riskwiz.bn.BNNodeFactory;
 
  
-public class RiskGraph<V, E > extends AbstractBaseGraph<V, E > {
+public class RiskGraph<V, E> extends AbstractBaseGraph<V, E > {
 
     /**
      * 
      */
     private static final long serialVersionUID = -1648493104509202405L;
 
-    public RiskGraph(EdgeFactory<V, E> ef, boolean allowMultipleEdges,
-            boolean allowLoops) {
-        super();
+    public RiskGraph(Supplier<V> vs, Supplier<E> es, GraphType gt) {
+        super(vs, es, gt /* , allowMultipleEdges, allowLoops */);
         // TODO Auto-generated constructor stub
     }
 	

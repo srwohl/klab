@@ -33,10 +33,14 @@
 package org.integratedmodelling.ml.legacy.riskwiz.bn;
 
 
+import java.util.function.Supplier;
+
 import org.jgrapht.graph.DefaultEdge;
 
 
 public class BNEdge extends DefaultEdge {
+
+    private static Supplier<BNEdge> supplier;
 
     /**
      * 
@@ -69,6 +73,10 @@ public class BNEdge extends DefaultEdge {
 
     public void setInformationEdge(boolean isInformationEdge) {
         this.isInformationEdge = isInformationEdge;
+    }
+
+    public static Supplier<BNEdge> getSupplier() {
+        return supplier;
     }
 
 }

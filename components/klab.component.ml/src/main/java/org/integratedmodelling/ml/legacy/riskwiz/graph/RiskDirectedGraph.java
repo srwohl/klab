@@ -17,21 +17,21 @@ public class RiskDirectedGraph<V, E> extends RiskGraph<V, E> implements
      */
     private static final long serialVersionUID = -2599507208814161629L;
 
-    public RiskDirectedGraph(EdgeFactory<V, E> ef, boolean allowMultipleEdges,
+    public RiskDirectedGraph(boolean allowMultipleEdges,
             boolean allowLoops) {
-        super(ef, allowMultipleEdges, allowLoops);
+        super(allowMultipleEdges, allowLoops);
         // TODO Auto-generated constructor stub
     }
 
-    /**
-     * Creates a new simple directed beliefNetwork.
-     * 
-     * @param edgeClass
-     *            class on which to base factory for edges
-     */
-    public RiskDirectedGraph(Class<? extends E> edgeClass) {
-        this(new ClassBasedEdgeFactory<V, E>(edgeClass));
-    }
+//    /**
+//     * Creates a new simple directed beliefNetwork.
+//     * 
+//     * @param edgeClass
+//     *            class on which to base factory for edges
+//     */
+//    public RiskDirectedGraph(Class<? extends E> edgeClass) {
+//        this(new ClassBasedEdgeFactory<V, E>(edgeClass));
+//    }
 
     /**
      * Creates a new simple directed beliefNetwork with the specified edge factory.
@@ -39,8 +39,8 @@ public class RiskDirectedGraph<V, E> extends RiskGraph<V, E> implements
      * @param ef
      *            the edge factory of the new beliefNetwork.
      */
-    public RiskDirectedGraph(EdgeFactory<V, E> ef) {
-        super(ef, false, false);
+    public RiskDirectedGraph() {
+        super(false, false);
     }
 
     public Set<V> getParents(V vertex) {

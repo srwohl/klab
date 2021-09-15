@@ -3,9 +3,9 @@ package org.integratedmodelling.ml.legacy.riskwiz.graph.algorithm;
 
 import java.util.Set;
 
+import org.integratedmodelling.contrib.jgrapht.Graphs;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskDirectedGraph;
 import org.integratedmodelling.ml.legacy.riskwiz.graph.RiskUndirectedGraph;
-import org.jgrapht.Graphs;
 
  
 public class Moralization<V, E > extends Algorithm<V, E > {
@@ -17,7 +17,7 @@ public class Moralization<V, E > extends Algorithm<V, E > {
         // add moral edges
 		
         RiskUndirectedGraph<V, E> copyGraph = new RiskUndirectedGraph<V, E>(
-                srcGarph.getEdgeFactory());
+                srcGarph.getEdgeSupplier());
 		  
         Graphs.addGraph(copyGraph, srcGarph);
 		 
