@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jxpath.JXPathContext;
@@ -99,6 +100,12 @@ public class WCSService {
 
 	public Collection<WCSLayer> getLayers() {
 		return layers.values();
+	}
+	
+	public Collection<WCSLayer> getWorkspacesLayers(String workspace) {
+		return layers.values().stream()
+				.filter(layer -> layer.getIdentifier().contains(workspace))
+				.collect(Collectors.toList());
 	}
 
 	public WCSLayer getLayer(String id) {

@@ -221,6 +221,7 @@ public enum Resources implements IResourceService {
     private IProject localProject;
 
     public static String REGEX_ENTRY = "regex";
+    public static String WORKSPACE_ENTRY = "workspace";
 
     private Resources() {
         Services.INSTANCE.registerService(this, IResourceService.class);
@@ -795,9 +796,11 @@ public enum Resources implements IResourceService {
      *        calculations.
      * @param regex if not null, is added to parameters with key REGEX_ENTRY and used as filter by
      *        the importer
+     * @param workspace if not null, is added to parameters with key WORKSPACE_ENTRY and used as filter by
+     *        the WCSService
      * @return
      */
-    public Collection<IResource> importResources(URL source, IProject project, @Nullable String adapterType, String regex) {
+    public Collection<IResource> importResources(URL source, IProject project, @Nullable String adapterType, String regex, String workspace) {
 
         List<IResourceAdapter> importers = new ArrayList<>();
         IParameters<String> parameters = new Parameters<String>();
@@ -806,6 +809,9 @@ public enum Resources implements IResourceService {
         // is added to metadata
         if (regex != null && !regex.equals("")) {
             parameters.put(REGEX_ENTRY, regex);
+        }
+        if (workspace != null) {
+        	parameters.put(WORKSPACE_ENTRY, workspace);
         }
         for (ResourceAdapterData adapter : resourceAdapters.values()) {
             if ((adapterType == null || adapter.adapter.getName().equals(adapterType)) && adapter.adapter.getImporter() != null

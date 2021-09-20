@@ -806,7 +806,7 @@ public class Session extends GroovyObjectSupport
                     public void run() {
                         if (request.isBulkImport()) {
                             for (IResource resource : Resources.INSTANCE.importResources(request.getImportUrl(), project,
-                                    request.getAdapter(), request.getRegex())) {
+                                    request.getAdapter(), request.getRegex(), request.getWorkspace())) {
                                 monitor.send(IMessage.MessageClass.ResourceLifecycle, IMessage.Type.ResourceImported,
                                         ((Resource) resource).getReference());
                             }

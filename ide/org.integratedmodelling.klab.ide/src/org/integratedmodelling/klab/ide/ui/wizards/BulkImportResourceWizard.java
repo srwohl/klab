@@ -63,6 +63,7 @@ public class BulkImportResourceWizard extends Wizard {
 		final String adapter = page.getAdapter();
 		String url = page.getChoice();
 		String regex = page.getRegexp();
+		String workspace = page.getWorkspace();
 
 		if (url.trim().isEmpty()) {
 			return false;
@@ -95,6 +96,7 @@ public class BulkImportResourceWizard extends Wizard {
 			request.setBulkImport(true);
 			request.setProjectName(targetProject.getName());
 			request.setRegex(regex);
+			request.setWorkspace(workspace);
 
 			Activator.post(IMessage.MessageClass.ResourceLifecycle, IMessage.Type.ImportResource, request);
 			return true;

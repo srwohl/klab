@@ -41,15 +41,26 @@ public class WcsImporter implements IResourceImporter {
 		// TODO parse from parameter string - for now just force it
 		String wcsVersion = "2.0.1";
 		String regex = null;
+		String workspace = null;
 		if (userData.contains("regex")) {
 			regex = (String) userData.get(Resources.REGEX_ENTRY);
 			userData.remove(Resources.REGEX_ENTRY);
+		}
+		if (userData.contains("workspace")) {
+			workspace = (String) userData.get(Resources.WORKSPACE_ENTRY);
+			userData.remove(Resources.WORKSPACE_ENTRY);
 		}
 		try {
 			int index = importLocation.indexOf('?');
 			importLocation = importLocation.substring(0, index);
 			WCSService wcs = WcsAdapter.getService(importLocation, Version.create(wcsVersion));
-			for (WCSLayer layer : wcs.getLayers()) {
+			Collection<WCSLayer> layers = null;
+			if (workspace != null) {
+				 layers = wcs.getWorkspacesLayers(workspace);
+			} else {
+				layers = wcs.getLayers();
+			}
+			for (WCSLayer layer : layers) {
 
 				if (layer.isError()) {
 					Logging.INSTANCE.warn("skipping corrupted WCS layer " + layer.getIdentifier());

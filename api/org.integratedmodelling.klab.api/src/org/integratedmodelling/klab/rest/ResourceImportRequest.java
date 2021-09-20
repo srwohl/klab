@@ -10,6 +10,7 @@ public class ResourceImportRequest {
 	private String projectName;
 	private boolean bulkImport;
 	private String regex;
+	private String workspace;
 
 	public ResourceImportRequest() {
 	}
@@ -65,6 +66,14 @@ public class ResourceImportRequest {
 
 	public void setRegex(String regexp) {
 		this.regex = regexp;
+	}
+
+	public void setWorkspace(String workspace) {
+		this.workspace = workspace;
+	}
+	
+	public String getWorkspace() {
+		return workspace;
 	}
 
 }

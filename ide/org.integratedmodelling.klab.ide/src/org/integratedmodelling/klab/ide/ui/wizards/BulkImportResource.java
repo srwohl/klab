@@ -72,6 +72,7 @@ public class BulkImportResource extends WizardPage {
 	private Text text;
 	private Combo combo;
 	private Text regexp;
+	private Text workspace;
 
 	private static String NO_CHOICE = "All applicable (may result in errors)";
 	private Table table;
@@ -277,7 +278,13 @@ public class BulkImportResource extends WizardPage {
 		btnChooseFolder.setText("Choose folder");
 		
 		Label lblNewLabel_2 = new Label(container, SWT.NONE);
-		lblNewLabel_2.setText("REGEX filter");
+		lblNewLabel_2.setText("Workspace filter");
+		
+		workspace = new Text(container, SWT.BORDER);
+		workspace.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		
+		Label lblNewLabel_3 = new Label(container, SWT.NONE);
+		lblNewLabel_3.setText("REGEX filter");
 		
 		regexp = new Text(container, SWT.BORDER);
 		regexp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
@@ -338,6 +345,10 @@ public class BulkImportResource extends WizardPage {
 	
 	public String getRegexp() {
 		return regexp.getText();
+	}
+	
+	public String getWorkspace() {
+		return workspace.getText();
 	}
 	
 	public String getAdapter() {
