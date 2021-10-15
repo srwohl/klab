@@ -1,16 +1,15 @@
 /*******************************************************************************
  * Copyright (c) 2015, 2016 itemis AG and others.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
+ * This program and the accompanying materials are made available under the terms of the Eclipse
+ * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0.
  *
  * SPDX-License-Identifier: EPL-2.0
  *
- * Contributors:
- *     Matthias Wienand (itemis AG) - initial API & implementation
+ * Contributors: Matthias Wienand (itemis AG) - initial API & implementation
  *
- * Note: Parts of this class have been transferred from org.eclipse.gef.zest.examples.jface.GraphJFaceSnippet1
+ * Note: Parts of this class have been transferred from
+ * org.eclipse.gef.zest.examples.jface.GraphJFaceSnippet1
  *
  *******************************************************************************/
 package org.integratedmodelling.klab.ide.utils;
@@ -32,6 +31,13 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+/**
+ * Needs to import e(fx)clipse 3.7.0 (->1) from the marketplace + GEF from
+ * http://download.eclipse.org/tools/gef/updates/integration
+ * 
+ * @author Ferd
+ *
+ */
 public class JFaceCustomNodeExample {
 
     static class MyContentProvider implements IGraphContentProvider {
@@ -52,20 +58,20 @@ public class JFaceCustomNodeExample {
         @Override
         public Object[] getNodes() {
             if (input == null) {
-                return new Object[] {};
+                return new Object[]{};
             }
-            return new Object[] { first(), second(), third() };
+            return new Object[]{first(), second(), third()};
         }
 
         public Object[] getAdjacentNodes(Object entity) {
             if (entity.equals(first())) {
-                return new Object[] { second() };
+                return new Object[]{second()};
             }
             if (entity.equals(second())) {
-                return new Object[] { third() };
+                return new Object[]{third()};
             }
             if (entity.equals(third())) {
-                return new Object[] { first() };
+                return new Object[]{first()};
             }
             return null;
         }
@@ -75,8 +81,7 @@ public class JFaceCustomNodeExample {
         }
 
         @Override
-        public void inputChanged(Viewer viewer, Object oldInput,
-                Object newInput) {
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             input = newInput;
         }
 
@@ -113,7 +118,7 @@ public class JFaceCustomNodeExample {
         shell.setSize(400, 400);
         Button button = new Button(shell, SWT.PUSH);
         button.setText("Reload");
-        button.addSelectionListener(new SelectionAdapter() {
+        button.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e) {
                 viewer.setInput(null);
                 viewer.setInput(new Object());
@@ -125,17 +130,16 @@ public class JFaceCustomNodeExample {
         viewer.setContentProvider(new MyContentProvider());
         viewer.setLabelProvider(new MyLabelProvider());
         viewer.setLayoutAlgorithm(new SpringLayoutAlgorithm());
-        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        viewer.addSelectionChangedListener(new ISelectionChangedListener(){
             public void selectionChanged(SelectionChangedEvent event) {
-                System.out.println(
-                        "Selection changed: " + (event.getSelection()));
+                System.out.println("Selection changed: " + (event.getSelection()));
             }
         });
         viewer.setInput(new Object());
 
         shell.open();
-        while (!shell.isDisposed()) {
-            while (!d.readAndDispatch()) {
+        while(!shell.isDisposed()) {
+            while(!d.readAndDispatch()) {
                 d.sleep();
             }
         }
