@@ -82,5 +82,10 @@
 			<artifactId>org.integratedmodelling.klab.api</artifactId>
 			<version>${klab.version}</version>
 		</dependency>
+		<dependency>
+		    <groupId>it.geosolutions.imageio-ext</groupId>
+		    <artifactId>imageio-ext-cog-rangereader-http</artifactId>
+		    <version>${imageio.ext.version}</version>
+		</dependency>
 	</dependencies>
 </project>
