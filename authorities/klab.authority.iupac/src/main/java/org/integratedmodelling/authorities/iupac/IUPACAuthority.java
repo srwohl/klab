@@ -101,7 +101,7 @@ public class IUPACAuthority implements IAuthority {
             ret.setId(identityId);
         }
         boolean ws = StringUtils.containsWhitespace(original);
-        ret.setLocator(ID + (ws ? ":'" : ":") + original + (ws ? "':" : ":"));
+        ret.setLocator(ID + (ws ? ":'" : ":") + original + (ws ? "'" : ""));
 
         /*
          * cache also the errors
@@ -133,6 +133,7 @@ public class IUPACAuthority implements IAuthority {
         case "text/plain":
             break;
         case "image/png":
+            // https://cactus.nci.nih.gov/chemical/structure/aspirin/image
             break;
         }
     }
@@ -149,7 +150,7 @@ public class IUPACAuthority implements IAuthority {
         ref.setFuzzy(true);
         ref.setDescription(DESCRIPTION);
         ref.getDocumentationFormats().add("text/plain");
-        ref.getDocumentationFormats().add("image/png");
+        ref.getDocumentationFormats().add("image/gif");
         ref.setName(ID);
         return ref;
     }

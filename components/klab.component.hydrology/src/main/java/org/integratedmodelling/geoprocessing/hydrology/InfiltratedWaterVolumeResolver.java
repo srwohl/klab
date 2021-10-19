@@ -52,37 +52,42 @@ public class InfiltratedWaterVolumeResolver implements IResolver<IProcess>, IExp
         IState streamPresenceState = context.getArtifact("presence_of_stream", IState.class);
         IState flowdirectionState = context.getArtifact("flow_directions_d8", IState.class);
 
+        GeotoolsUtils.INSTANCE.dumpToRaster(context, "Infiltration", petState, rainfallVolumeState, runoffVolumeState,
+                streamPresenceState, flowdirectionState);
+
         IState netInfiltratedWaterVolumeState = context.getArtifact("net_infiltrated_water_volume", IState.class);
         IState infiltratedWaterVolumeState = context.getArtifact("infiltrated_water_volume", IState.class);
 
         TaskMonitor taskMonitor = new TaskMonitor(context.getMonitor());
         taskMonitor.setTaskName("Infiltration");
 
-        OmsInfiltratedWaterVolume v = new OmsInfiltratedWaterVolume();
-        v.pm = taskMonitor;
-        v.pAlpha = alpha;
-        v.inPet = getGridCoverage(context, petState);
-        v.inFlowdirections = getGridCoverage(context, flowdirectionState);
-        v.inNet = getGridCoverage(context, streamPresenceState);
-        v.inRainfall = getGridCoverage(context, rainfallVolumeState);
-        v.inRunoff = getGridCoverage(context, runoffVolumeState);
-        try {
-            v.process();
-        } catch (Exception e) {
-            throw new KlabException(e);
+        if (petState != null && rainfallVolumeState != null && flowdirectionState != null && streamPresenceState != null
+                && runoffVolumeState != null) {
+
+            OmsInfiltratedWaterVolume v = new OmsInfiltratedWaterVolume();
+            v.pm = taskMonitor;
+            v.pAlpha = alpha;
+            v.inPet = getGridCoverage(context, petState);
+            v.inFlowdirections = getGridCoverage(context, flowdirectionState);
+            v.inNet = getGridCoverage(context, streamPresenceState);
+            v.inRainfall = getGridCoverage(context, rainfallVolumeState);
+            v.inRunoff = getGridCoverage(context, runoffVolumeState);
+            try {
+                v.process();
+            } catch (Exception e) {
+                throw new KlabException(e);
+            }
+            if (!context.getMonitor().isInterrupted()) {
+                // NOTE: also AET and LSUM maps are produced, but not passed as process output,
+                // since it is not defined in the semantics.
+
+                GeotoolsUtils.INSTANCE.coverageToState(v.outInfiltration, infiltratedWaterVolumeState, context.getScale(), null);
+                GeotoolsUtils.INSTANCE.coverageToState(v.outNetInfiltration, netInfiltratedWaterVolumeState, context.getScale(),
+                        null);
+            }
+            GeotoolsUtils.INSTANCE.dumpToRaster(context, "Infiltration", netInfiltratedWaterVolumeState,
+                    infiltratedWaterVolumeState);
         }
-        if (!context.getMonitor().isInterrupted()) {
-            // NOTE: also AET and LSUM maps are produced, but not passed as process output,
-            // since it is not defined in the semantics.
-
-            GeotoolsUtils.INSTANCE.coverageToState(v.outInfiltration, infiltratedWaterVolumeState, context.getScale(), null);
-            GeotoolsUtils.INSTANCE.coverageToState(v.outNetInfiltration, netInfiltratedWaterVolumeState, context.getScale(),
-                    null);
-        }
-
-        GeotoolsUtils.INSTANCE.dumpToRaster(context, "Infiltration", petState, rainfallVolumeState, runoffVolumeState,
-                streamPresenceState, flowdirectionState, netInfiltratedWaterVolumeState, infiltratedWaterVolumeState);
-
         return infiltratedProcess;
     }
 

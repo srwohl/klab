@@ -1,5 +1,9 @@
 package org.integratedmodelling.klab.rest;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.integratedmodelling.klab.api.provenance.IArtifact;
 
 public class CodelistReference {
@@ -7,15 +11,21 @@ public class CodelistReference {
     private String id;
     private String name;
     private String description;
+    private Map<String, String> codeDescriptions = new LinkedHashMap<>();
     private AuthenticatedIdentity source;
     private MappingReference directMapping;
     private MappingReference inverseMapping;
+    private boolean twoWay;
     private String authorityId;
     private String rootConceptId;
     private boolean isAuthority;
     private String worldview;
     private IArtifact.Type type;
-
+    private String agency;
+    private String version;
+    private Map<String, String> metadata = new HashMap<>();
+    private String pattern;
+    
     public String getId() {
         return id;
     }
@@ -89,6 +99,42 @@ public class CodelistReference {
     }
     public void setType(IArtifact.Type type) {
         this.type = type;
+    }
+    public String getAgency() {
+        return agency;
+    }
+    public void setAgency(String agency) {
+        this.agency = agency;
+    }
+    public String getVersion() {
+        return version;
+    }
+    public void setVersion(String version) {
+        this.version = version;
+    }
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
+    }
+    public Map<String, String> getCodeDescriptions() {
+        return codeDescriptions;
+    }
+    public void setCodeDescriptions(Map<String, String> codeDescriptions) {
+        this.codeDescriptions = codeDescriptions;
+    }
+    public boolean isTwoWay() {
+        return twoWay;
+    }
+    public void setTwoWay(boolean twoWay) {
+        this.twoWay = twoWay;
+    }
+    public String getPattern() {
+        return pattern;
+    }
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
     }
 
 }
