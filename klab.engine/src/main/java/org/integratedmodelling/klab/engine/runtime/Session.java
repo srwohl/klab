@@ -24,13 +24,18 @@ import java.util.logging.Level;
 import org.integratedmodelling.kactors.api.IKActorsBehavior;
 import org.integratedmodelling.kactors.model.KActors;
 import org.integratedmodelling.kactors.model.KActorsBehavior;
+import org.integratedmodelling.kim.api.BinarySemanticOperator;
 import org.integratedmodelling.kim.api.IKimConcept;
 import org.integratedmodelling.kim.api.IKimNamespace;
 import org.integratedmodelling.kim.api.IKimProject;
+import org.integratedmodelling.kim.api.SemanticModifier;
+import org.integratedmodelling.kim.api.UnarySemanticOperator;
+import org.integratedmodelling.kim.api.ValueOperator;
 import org.integratedmodelling.kim.model.Kim;
 import org.integratedmodelling.klab.Actors;
 import org.integratedmodelling.klab.Authentication;
 import org.integratedmodelling.klab.Authorities;
+import org.integratedmodelling.klab.Concepts;
 import org.integratedmodelling.klab.Configuration;
 import org.integratedmodelling.klab.Currencies;
 import org.integratedmodelling.klab.Documentation;
@@ -38,6 +43,7 @@ import org.integratedmodelling.klab.Indexing;
 import org.integratedmodelling.klab.Klab;
 import org.integratedmodelling.klab.Logging;
 import org.integratedmodelling.klab.Network;
+import org.integratedmodelling.klab.Observables;
 import org.integratedmodelling.klab.Observations;
 import org.integratedmodelling.klab.Resources;
 import org.integratedmodelling.klab.Units;
@@ -56,8 +62,11 @@ import org.integratedmodelling.klab.api.data.CRUDOperation;
 import org.integratedmodelling.klab.api.data.IResource;
 import org.integratedmodelling.klab.api.data.adapters.IResourceAdapter;
 import org.integratedmodelling.klab.api.documentation.IDocumentation;
+import org.integratedmodelling.klab.api.knowledge.IAuthority;
 import org.integratedmodelling.klab.api.knowledge.IAuthority.Identity;
+import org.integratedmodelling.klab.api.knowledge.ICodelist;
 import org.integratedmodelling.klab.api.knowledge.IMetadata;
+import org.integratedmodelling.klab.api.knowledge.IObservable;
 import org.integratedmodelling.klab.api.knowledge.IProject;
 import org.integratedmodelling.klab.api.monitoring.IMessage;
 import org.integratedmodelling.klab.api.monitoring.IMessageBus;
@@ -87,6 +96,7 @@ import org.integratedmodelling.klab.components.runtime.actors.KlabActor.ActorRef
 import org.integratedmodelling.klab.components.runtime.actors.SessionActor;
 import org.integratedmodelling.klab.components.runtime.actors.SystemBehavior;
 import org.integratedmodelling.klab.components.runtime.actors.SystemBehavior.Spawn;
+import org.integratedmodelling.klab.data.resources.Codelist;
 import org.integratedmodelling.klab.data.resources.Resource;
 import org.integratedmodelling.klab.dataflow.Flowchart;
 import org.integratedmodelling.klab.dataflow.Flowchart.ElementType;
@@ -94,13 +104,17 @@ import org.integratedmodelling.klab.documentation.DataflowDocumentation;
 import org.integratedmodelling.klab.engine.Engine;
 import org.integratedmodelling.klab.engine.Engine.Monitor;
 import org.integratedmodelling.klab.engine.debugger.Debug;
+import org.integratedmodelling.klab.engine.indexing.Indexer;
 import org.integratedmodelling.klab.engine.resources.Project;
 import org.integratedmodelling.klab.engine.runtime.api.IRuntimeScope;
 import org.integratedmodelling.klab.engine.runtime.api.ITaskTree;
 import org.integratedmodelling.klab.exceptions.KlabActorException;
 import org.integratedmodelling.klab.exceptions.KlabException;
 import org.integratedmodelling.klab.monitoring.Message;
+import org.integratedmodelling.klab.owl.syntax.SemanticExpression;
 import org.integratedmodelling.klab.rest.AuthorityIdentity;
+import org.integratedmodelling.klab.rest.AuthorityQueryRequest;
+import org.integratedmodelling.klab.rest.AuthorityQueryResponse;
 import org.integratedmodelling.klab.rest.AuthorityResolutionRequest;
 import org.integratedmodelling.klab.rest.ConsoleNotification;
 import org.integratedmodelling.klab.rest.ContextualizationRequest;
@@ -124,6 +138,7 @@ import org.integratedmodelling.klab.rest.ProjectLoadRequest;
 import org.integratedmodelling.klab.rest.ProjectLoadResponse;
 import org.integratedmodelling.klab.rest.ProjectModificationNotification;
 import org.integratedmodelling.klab.rest.ProjectModificationRequest;
+import org.integratedmodelling.klab.rest.QueryStatusResponse;
 import org.integratedmodelling.klab.rest.ResourceCRUDRequest;
 import org.integratedmodelling.klab.rest.ResourceImportRequest;
 import org.integratedmodelling.klab.rest.ResourceOperationRequest;
@@ -135,11 +150,13 @@ import org.integratedmodelling.klab.rest.SearchMatch;
 import org.integratedmodelling.klab.rest.SearchMatch.TokenClass;
 import org.integratedmodelling.klab.rest.SearchMatchAction;
 import org.integratedmodelling.klab.rest.SearchRequest;
+import org.integratedmodelling.klab.rest.SearchRequest.Mode;
 import org.integratedmodelling.klab.rest.SearchResponse;
 import org.integratedmodelling.klab.rest.SessionReference;
 import org.integratedmodelling.klab.rest.SettingChangeRequest;
 import org.integratedmodelling.klab.rest.SpatialExtent;
 import org.integratedmodelling.klab.rest.SpatialLocation;
+import org.integratedmodelling.klab.rest.StyledKimToken;
 import org.integratedmodelling.klab.rest.TicketRequest;
 import org.integratedmodelling.klab.rest.TicketResponse;
 import org.integratedmodelling.klab.rest.ViewAction;
@@ -709,16 +726,46 @@ public class Session extends GroovyObjectSupport
     }
 
     @MessageHandler
-    private void handleResourceCRUDRequest(final ResourceCRUDRequest request, IMessage.Type type) {
+    private void handleResourceCRUDRequest(final ResourceCRUDRequest request, IMessage message) {
 
         if (request.getOperation() == CRUDOperation.CREATE) {
 
             IResource resource = Resources.INSTANCE.createLocalResource(request, monitor);
             if (resource != null) {
-                monitor.send(IMessage.MessageClass.ResourceLifecycle, IMessage.Type.ResourceCreated,
-                        ((Resource) resource).getReference());
+                monitor.send(Message.create(token, IMessage.MessageClass.ResourceLifecycle, IMessage.Type.ResourceCreated,
+                        ((Resource) resource).getReference()).inResponseTo(message));
             }
 
+        } else if (message.getType() == IMessage.Type.CreateCodelist) {
+
+            IResource resource = Resources.INSTANCE.resolveResource(request.getResourceUrns().iterator().next());
+            if (resource == null) {
+                monitor.error("requested resource not found: " + request.getResourceUrns().iterator().next());
+                return;
+            }
+
+            ICodelist codelist = Resources.INSTANCE.createCodelist(resource, request.getCodelistAttribute(), monitor);
+            if (codelist != null) {
+                monitor.send(Message.create(token, IMessage.MessageClass.ResourceLifecycle, IMessage.Type.CodelistCreated,
+                        ((Codelist) codelist).getReference()).inResponseTo(message));
+            }
+
+        } else if (message.getType() == IMessage.Type.GetCodelist) {
+
+            IResource resource = Resources.INSTANCE.resolveResource(request.getResourceUrns().iterator().next());
+            if (resource == null) {
+                monitor.error("requested resource not found: " + request.getResourceUrns().iterator().next());
+                return;
+            }
+
+            ICodelist codelist = Resources.INSTANCE.getCodelist(resource, request.getCodelistAttribute(), monitor);
+            if (codelist != null) {
+                monitor.send(Message.create(token, IMessage.MessageClass.ResourceLifecycle, IMessage.Type.CodelistCreated,
+                        ((Codelist) codelist).getReference()).inResponseTo(message));
+            }
+
+        } else if (message.getType() == IMessage.Type.UpdateCodelist) {
+        } else if (message.getType() == IMessage.Type.DeleteCodelist) {
         } else {
 
             for (String urn : request.getResourceUrns()) {
@@ -794,6 +841,33 @@ public class Session extends GroovyObjectSupport
     }
 
     @MessageHandler
+    private void handleAuthorityQueryRequest(AuthorityQueryRequest request, IMessage message) {
+
+        AuthorityQueryResponse ret = new AuthorityQueryResponse();
+
+        IAuthority authority = Authorities.INSTANCE.getAuthority(request.getAuthorityId());
+        if (authority == null) {
+            ret.setError("Authority " + request.getAuthorityId() + " is inaccessible or non-existent");
+        } else if (authority.getCapabilities().isSearchable()) {
+            for (IAuthority.Identity identity : authority.search(request.getQueryString(), request.getAuthorityCatalog())) {
+                if (identity instanceof AuthorityIdentity) {
+                    ret.getMatches().add((AuthorityIdentity) identity);
+                }
+            }
+        } else {
+            Identity identity = authority.getIdentity(request.getQueryString(), request.getAuthorityCatalog());
+            if (identity instanceof AuthorityIdentity) {
+                ret.getMatches().add((AuthorityIdentity) identity);
+            } else {
+                ret.setError("Identity " + request.getAuthorityId() + " produced an invalid or null result");
+            }
+        }
+
+        monitor.send(Message.create(this.token, IMessage.MessageClass.UserInterface, IMessage.Type.AuthoritySearchResults, ret)
+                .inResponseTo(message));
+    }
+
+    @MessageHandler
     private void importResource(final ResourceImportRequest request, IMessage.Type type) {
 
         if (type == IMessage.Type.ImportResource) {
@@ -859,7 +933,20 @@ public class Session extends GroovyObjectSupport
     }
 
     @MessageHandler
-    private void handleMatchAction(SearchMatchAction action) {
+    private void handleMatchAction(SearchMatchAction action, IMessage message) {
+
+        if (message.getType() == IMessage.Type.SemanticMatch) {
+            SemanticExpression expression = semanticExpressions.get(action.getContextId());
+            /*
+             * Insert choice into current expression and setup for next search.
+             */
+            SearchResponse matches = expression.getData("matches", SearchResponse.class);
+            if (matches != null && matches.getMatches().size() > action
+                    .getMatchIndex()/* which would be weird */) {
+                acceptChoice(expression, matches.getMatches().get(action.getMatchIndex()), action.getContextId());
+            }
+            return;
+        }
 
         final String contextId = action.getContextId();
         Pair<Context, List<Match>> ctx = searchContexts.get(contextId);
@@ -867,7 +954,7 @@ public class Session extends GroovyObjectSupport
             throw new IllegalStateException("match action has invalid context ID");
         }
 
-        if (action.getMatchId().startsWith("klab:")) {
+        if (action.getMatchId() != null && action.getMatchId().startsWith("klab:")) {
             // TODO/FIXME: use a more robust test
             getState().submitGeolocation(action.getMatchId());
             return;
@@ -878,6 +965,58 @@ public class Session extends GroovyObjectSupport
                 : ctx.getFirst().previous();
 
         searchContexts.put(contextId, new Pair<>(newContext, new ArrayList<>()));
+    }
+
+    private void acceptChoice(SemanticExpression expression, SearchMatch searchMatch, String contextId) {
+
+        Object input = searchMatch.getId();
+
+        if (searchMatch.getMatchType() == Match.Type.CONCEPT) {
+            input = Concepts.c(searchMatch.getId());
+        } else if (searchMatch.getMatchType() == Match.Type.VALUE_OPERATOR) {
+            input = ValueOperator.getOperator(searchMatch.getId());
+        } else if (searchMatch.getMatchType() == Match.Type.UNARY_OPERATOR
+                || searchMatch.getMatchType() == Match.Type.PREFIX_OPERATOR) {
+            input = UnarySemanticOperator.forCode(searchMatch.getId());
+        } else if (searchMatch.getMatchType() == Match.Type.SEMANTIC_MODIFIER
+                || searchMatch.getMatchType() == Match.Type.INFIX_OPERATOR) {
+            input = SemanticModifier.forCode(searchMatch.getId());
+        } else if (searchMatch.getMatchType() == Match.Type.BINARY_OPERATOR) {
+            input = BinarySemanticOperator.forCode(searchMatch.getId());
+        } else if (searchMatch.getMatchType() == Match.Type.MODIFIER) {
+            input = SemanticModifier.forCode(searchMatch.getId());
+        }
+
+        if (!expression.accept(input)) {
+            monitor.error(expression.getErrorAndReset());
+        }
+
+        /*
+         * send current status to client so it can be displayed
+         */
+        QueryStatusResponse response = new QueryStatusResponse();
+        response.setContextId(contextId);
+        response.getErrors().addAll(expression.getErrors());
+        response.getCode().addAll(expression.getStyledCode());
+        response.setCurrentType(expression.getObservableType());
+
+        StringBuffer code = new StringBuffer(256);
+        for (StyledKimToken token : response.getCode()) {
+            code.append(token.getValue() + " ");
+        }
+        String cc = code.toString();
+        if (!cc.isBlank() && !cc.contains("?")) {
+            try {
+                IObservable observable = Observables.INSTANCE.declare(cc);
+                if (observable != null) {
+                    response.setDescription(Observables.INSTANCE.describe(observable.getType()));
+                }
+            } catch (Throwable t) {
+                // nothing
+            }
+        }
+
+        monitor.send(IMessage.MessageClass.UserInterface, IMessage.Type.QueryStatus, response);
     }
 
     @MessageHandler(type = IMessage.Type.DataflowNodeDetail)
@@ -956,8 +1095,200 @@ public class Session extends GroovyObjectSupport
         return null;
     }
 
+    /**
+     * Move up and substitute searchContexts when done.
+     */
+    private Map<String, SemanticExpression> semanticExpressions = new HashMap<>();
+
+    /**
+     * The next-generation semantic search using ObservableComposer
+     * 
+     * @param request
+     * @param message
+     */
+    private void semanticSearch(SearchRequest request, IMessage message) {
+
+        if (request.isCancelSearch()) {
+            semanticExpressions.remove(request.getContextId());
+            searchContexts.remove(request.getContextId());
+        } else {
+            /*
+             * spawn search thread, which will respond when done.
+             */
+            new Thread(){
+
+                @Override
+                public void run() {
+
+                    SearchResponse response = setupResponse(request);
+
+                    switch(request.getSearchMode()) {
+                    case FREETEXT:
+                        searchFreetext(request, response);
+                        break;
+                    case UNDO:
+
+                        // client may be stupid, as mine is
+                        if (request.getContextId() != null && semanticExpressions.containsKey(request.getContextId())) {
+
+                            SemanticExpression expression = semanticExpressions.get(request.getContextId());
+                            boolean ok = true;
+                            if (!semanticExpressions.get(request.getContextId()).undo()) {
+                                semanticExpressions.remove(request.getContextId());
+                                searchContexts.remove(request.getContextId());
+                                ok = false;
+                            }
+
+                            QueryStatusResponse qr = new QueryStatusResponse();
+                            qr.setContextId(ok ? request.getContextId() : null);
+                            if (ok) {
+                                qr.getErrors().addAll(expression.getErrors());
+                                qr.getCode().addAll(expression.getStyledCode());
+                                qr.setCurrentType(expression.getObservableType());
+                            }
+                            monitor.send(IMessage.MessageClass.UserInterface, IMessage.Type.QueryStatus, qr);
+                        }
+                        break;
+
+                    case OPEN_SCOPE:
+
+                        semanticExpressions.get(response.getContextId()).accept("(");
+                        QueryStatusResponse qr = new QueryStatusResponse();
+                        qr.setContextId(request.getContextId());
+                        qr.getErrors().addAll(semanticExpressions.get(response.getContextId()).getErrors());
+                        qr.getCode().addAll(semanticExpressions.get(response.getContextId()).getStyledCode());
+                        qr.setCurrentType(semanticExpressions.get(response.getContextId()).getObservableType());
+                        monitor.send(IMessage.MessageClass.UserInterface, IMessage.Type.QueryStatus, qr);
+                        break;
+
+                    case CLOSE_SCOPE:
+
+                        semanticExpressions.get(response.getContextId()).accept(")");
+                        qr = new QueryStatusResponse();
+                        qr.setContextId(request.getContextId());
+                        qr.getErrors().addAll(semanticExpressions.get(response.getContextId()).getErrors());
+                        qr.getCode().addAll(semanticExpressions.get(response.getContextId()).getStyledCode());
+                        qr.setCurrentType(semanticExpressions.get(response.getContextId()).getObservableType());
+                        monitor.send(IMessage.MessageClass.UserInterface, IMessage.Type.QueryStatus, qr);
+                        break;
+
+                    case SEMANTIC:
+
+                        if (request.isDefaultResults()) {
+                            setDefaultSearchResults(response.getContextId(), request, response);
+                        } else {
+                            SemanticExpression expression = semanticExpressions.get(response.getContextId());
+                            if (expression == null) {
+                                expression = SemanticExpression.create();
+                                semanticExpressions.put(response.getContextId(), expression);
+                            }
+                            runSemanticSearch(expression, request, response);
+                        }
+
+                        break;
+                    }
+
+                    response.setElapsedTimeMs(System.currentTimeMillis() - response.getElapsedTimeMs());
+                    monitor.send(Message
+                            .create(token, IMessage.MessageClass.Query, IMessage.Type.QueryResult, response.signalEndTime())
+                            .inResponseTo(message));
+                }
+            }.run();
+        }
+
+    }
+
+    protected SearchResponse setupResponse(SearchRequest request) {
+
+        final String contextId = request.getContextId() == null ? NameGenerator.shortUUID() : request.getContextId();
+
+        if ((request.getSearchMode() == Mode.FREETEXT || request.isDefaultResults())) {
+            if ((request.getContextId() == null)
+                    || searchContexts.get(contextId) == null && searchContexts.get(contextId).getFirst() == null) {
+                searchContexts.put(contextId, new Pair<>(
+                        Indexing.INSTANCE.createContext(request.getMatchTypes(), request.getSemanticTypes()), new ArrayList<>()));
+            }
+        }
+
+        SearchResponse response = new SearchResponse();
+        response.setContextId(contextId);
+        response.setRequestId(request.getRequestId());
+
+        return response;
+    }
+
+    /**
+     * TODO move into semantics package
+     * 
+     * @param expression
+     * @param request
+     * @param response
+     */
+    protected void runSemanticSearch(SemanticExpression expression, SearchRequest request, SearchResponse response) {
+
+        for (Match match : Indexer.INSTANCE.query(request.getQueryString(), expression.getCurrent().getScope(),
+                request.getMaxResults())) {
+            response.getMatches().add(((org.integratedmodelling.klab.engine.indexing.SearchMatch) match).getReference());
+        }
+
+        // save the matches in the expression so that we recognize a choice
+        expression.setData("matches", response);
+    }
+
+    /**
+     * TODO move into authentication package or semantics
+     * 
+     * @param response
+     */
+    protected void setDefaultSearchResults(String contextId, SearchRequest request, SearchResponse response) {
+        /*
+         * These come from the user's groups. They should eventually be linked to session history
+         * and preferences.
+         */
+        List<Match> matches = new ArrayList<>();
+        int i = 0;
+        for (ObservableReference observable : Authentication.INSTANCE.getDefaultObservables(Session.this)) {
+            SearchMatch match = new SearchMatch(observable.getObservable(), observable.getLabel(), observable.getDescription(),
+                    observable.getSemantics(), observable.getState(), observable.getExtendedDescription());
+            match.setIndex(i++);
+            response.getMatches().add(match);
+            matches.add(new org.integratedmodelling.klab.engine.indexing.SearchMatch(match));
+        }
+        searchContexts.put(contextId, new Pair<Context, List<Match>>(
+                Indexing.INSTANCE.createContext(request.getMatchTypes(), request.getSemanticTypes()), matches));
+    }
+
+    /**
+     * TODO move into semantic package or concepts
+     * 
+     * @param request
+     * @param response
+     */
+    protected void searchFreetext(SearchRequest request, SearchResponse response) {
+        // TODO also lookup local matches and spawn search for remote ones to answer
+        // afterwards.
+        List<Match> matches = new ArrayList<>();
+        int i = 0;
+        for (Location location : Geocoder.INSTANCE.lookup(request.getQueryString())) {
+            if ("relation".equals(location.getOsm_type())) {
+
+                SearchMatch match = new SearchMatch(location.getURN(), location.getName(), location.getDescription(),
+                        IKimConcept.Type.SUBJECT);
+                match.setIndex(i++);
+                response.getMatches().add(match);
+                matches.add(new org.integratedmodelling.klab.engine.indexing.SearchMatch(match));
+            }
+        }
+    }
+
+    @Deprecated
     @MessageHandler
     private void handleSearchRequest(SearchRequest request, IMessage message) {
+
+        if (message.getType() == IMessage.Type.SemanticSearch) {
+            semanticSearch(request, message);
+            return;
+        }
 
         final String contextId = request.getContextId() == null ? NameGenerator.shortUUID() : request.getContextId();
         if (request.getContextId() == null

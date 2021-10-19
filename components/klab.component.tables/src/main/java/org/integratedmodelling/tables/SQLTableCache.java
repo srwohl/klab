@@ -46,13 +46,13 @@ public class SQLTableCache {
     Map<String, String> sanitizedNames = new HashMap<>();
 
     public static int createCache(String id, Table table, IMonitor monitor) {
-        
+
         SQLTableCache cache = new SQLTableCache();
         List<Attribute> sortedAttributes = TablesawTable.getAttributes(table);
         for (Attribute attribute : sortedAttributes) {
             cache.sanitizedNames.put(cache.sanitize(attribute.getName()), attribute.getName());
         }
-        
+
         cache.dbname = cache.sanitize(id);
         cache.sortedAttributes_ = sortedAttributes;
         cache.database = H2Database.createPersistent(cache.dbname);
@@ -94,6 +94,12 @@ public class SQLTableCache {
     }
 
     private void createStructure() {
+
+        /**
+         * Re-entrant or we can't test anything. TODO should be an option for when things are
+         * expensive or temporary.
+         */
+        database.execute("DROP TABLE data IF EXISTS;");
 
         String sql = "CREATE TABLE data (\n   oid LONG";
         for (Attribute column : getSortedAttributes()) {
@@ -179,7 +185,7 @@ public class SQLTableCache {
             database.execute(sql);
             row++;
         }
-        
+
         return row;
     }
 
@@ -285,12 +291,12 @@ public class SQLTableCache {
             while(result.hasNext()) {
                 try {
                     if (retrieved.size() == 1) {
-                        ret.add(table.mapValue(result.result.getObject(1),
+                        ret.add(table.mapValue(result.result.getObject(1).toString(),
                                 table.getColumnDescriptor(sanitizedNames.get(retrieved.get(0)))));
                     } else if (retrieved.size() > 1) {
                         List<Object> row = new ArrayList<>();
                         for (int i = 0; i < retrieved.size(); i++) {
-                            row.add(table.mapValue(result.result.getObject(i + 1),
+                            row.add(table.mapValue(result.result.getObject(i + 1).toString(),
                                     table.getColumnDescriptor(sanitizedNames.get(retrieved.get(i)))));
                         }
                         ret.add(row);

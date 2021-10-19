@@ -3,6 +3,7 @@ package org.integratedmodelling.tables;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -41,7 +42,7 @@ import org.integratedmodelling.klab.utils.Utils;
  * @author Ferd
  *
  */
-public class CodeList implements ICodelist<Object, Object> {
+public class CodeList implements ICodelist {
 
     public enum Mapping {
         CODELIST, YEAR, DATE_PATTERN
@@ -49,7 +50,7 @@ public class CodeList implements ICodelist<Object, Object> {
     }
 
     private Properties properties = new Properties();
-    private BidiMap<Object, Object> mappings = new DualTreeBidiMap<>();
+    private BidiMap<String, Object> mappings = new DualTreeBidiMap<>();
     private IArtifact.Type type = null;
     private String worldview = null;
     private IConcept rootConcept = null;
@@ -102,7 +103,7 @@ public class CodeList implements ICodelist<Object, Object> {
         }
     }
 
-    public Object map(Object value) {
+    public Object value(String value) {
 
         if (this.mapping == Mapping.YEAR) {
 
@@ -136,7 +137,7 @@ public class CodeList implements ICodelist<Object, Object> {
         return null;
     }
 
-    public Object reverseMap(Object value) {
+    public String key(Object value) {
 
         if (this.mapping == Mapping.YEAR) {
 
@@ -185,6 +186,18 @@ public class CodeList implements ICodelist<Object, Object> {
     public boolean isAuthority() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public Collection<String> keys(Object value) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getPattern() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
