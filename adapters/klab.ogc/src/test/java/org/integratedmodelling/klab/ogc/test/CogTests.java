@@ -90,5 +90,20 @@ public class CogTests {
         assertEquals(512, raster.getHeight());
         assertEquals(1, raster.getNumBands());
 	}
+	
+	@Test
+	public void cogLayer() throws IOException {
+		BasicAuthURI cogUri = new BasicAuthURI(cogUrl2, false);
+        HttpRangeReader rangeReader =
+                new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
+        CogSourceSPIProvider input =
+                new CogSourceSPIProvider(
+                        cogUri,
+                        new CogImageReaderSpi(),
+                        new CogImageInputStreamSpi(),
+                        rangeReader.getClass().getName());
+        GeoTiffReader reader = new GeoTiffReader(input);
+        GridCoverage2D coverage = reader.read(null);
+	}
 
 }

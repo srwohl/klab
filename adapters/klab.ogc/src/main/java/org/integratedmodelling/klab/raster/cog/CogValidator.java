@@ -27,9 +27,11 @@ public class CogValidator implements IResourceValidator{
 		CogLayer layer = CogAdapter.getService(url.toString()).getLayer();
 		
 		IGeometry geometry = layer.getGeometry();
-        if (!layer.getNodata().isEmpty()) {
-            userData.put("nodata", layer.getNodata());
-        }
+		//cant do this with a double, perhaps that is why it was a set.  Also it may expect
+		//a set later down the road.
+//        if (layer.getNodata() == null) {
+//            userData.put("nodata", layer.getNodata());
+//        }
         return new ResourceBuilder().withParameters(userData).withParameter("transform", "").withType(Type.NUMBER)
                 .withGeometry(geometry).withSpatialExtent(layer.getSpatialExtent());
 	}

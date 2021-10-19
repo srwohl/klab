@@ -1,10 +1,12 @@
 package org.integratedmodelling.klab.raster.cog.api;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.util.CoverageUtilities;
 import org.integratedmodelling.klab.api.data.IGeometry;
 import org.integratedmodelling.klab.api.observations.scale.space.IEnvelope;
 import org.integratedmodelling.klab.common.Geometry;
@@ -12,22 +14,22 @@ import org.integratedmodelling.klab.components.geospace.extents.Envelope;
 import org.integratedmodelling.klab.components.geospace.extents.Projection;
 import org.integratedmodelling.klab.rest.SpatialExtent;
 
+import it.geosolutions.jaiext.range.NoDataContainer;
+
 public class CogLayer {
 	
 	private String name;
-	private double noData;
+	Set<Double> nodata = new HashSet<>();
 	private IEnvelope wgs84envelope;
 	private int[] gridShape;
 	private long timestamp = System.currentTimeMillis();
 	
-	// this may not be filled in despite the existence of at least one band
-	private List<CogBand> bands = new ArrayList<>();
 	private Projection originalProjection;
 	private IEnvelope originalEnvelope;
 
 	public CogLayer(GridCoverage2D coverage) {
 		this.name = coverage.getName().toString(Locale.ENGLISH);
-		this.noData = CoverageUtilities.getNoDataProperty(coverage).getAsSingleValue();
+		this.nodata = noDataFromCoverage(coverage);
 		this.gridShape = createGridShape(coverage);
 		this.originalProjection = Projection.create(coverage.getCoordinateReferenceSystem());
 		this.originalEnvelope = envelopeFromCoverage(coverage, originalProjection); 
@@ -59,8 +61,23 @@ public class CogLayer {
 		return ret;
 	}
 
-	public double getNodata() {
-		return noData;
+	public Set<Double> noDataFromCoverage(GridCoverage2D coverage) {
+		final Object property = coverage.getProperty(NoDataContainer.GC_NODATA);
+		if (property == null ) {
+			return new HashSet<Double>();
+		} else {
+			Set<Double> targetSet = new HashSet<Double>();
+            if (property instanceof NoDataContainer) {
+                NoDataContainer container = (NoDataContainer) property;
+                double[] vals = container.getAsArray();
+                for (double val: vals) {
+                	targetSet.add(Double.valueOf(val));
+                }
+            } else if (property instanceof Double) {
+            	targetSet.add((Double) property);
+            }
+            return targetSet;
+		}
 	}
 
 	public SpatialExtent getSpatialExtent() {
@@ -101,8 +118,13 @@ public class CogLayer {
 		return new int[] { gridHighRange[0] - gridLowRange[0], gridHighRange[1] - gridLowRange[1] };
 	}
 	
+	
 	public String getName() {
 		return name;
+	}
+
+	public Set<Double> getNodata() {
+		return nodata;		
 	}
 	
 	
