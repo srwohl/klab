@@ -143,8 +143,7 @@ public class Component implements IComponent {
 		try {
 			executor = implementingClass.getDeclaredConstructor().newInstance();
 		} catch (Exception e) {
-			//new KlabInternalErrorException("cannot instantiate component executor for " + name);
-		    new KlabInternalErrorException(e);
+		    throw new KlabInternalErrorException("cannot instantiate component executor for " + name, e);
 		}
 
 		if (executor == null) {
@@ -238,8 +237,7 @@ public class Component implements IComponent {
 		try {
 			executor = implementingClass.getDeclaredConstructor().newInstance();
 		} catch (Exception e) {
-			// throw new KlabInternalErrorException("cannot instantiate component executor for " + name);
-		    throw new KlabInternalErrorException(e);
+		    throw new KlabInternalErrorException("cannot instantiate component executor for " + name, e);
 		}
 
 		if (executor == null) {

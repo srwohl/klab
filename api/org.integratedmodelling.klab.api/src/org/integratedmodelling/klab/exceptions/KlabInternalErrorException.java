@@ -49,8 +49,17 @@ public class KlabInternalErrorException extends KlabException {
      *
      * @param e the e
      */
-    public KlabInternalErrorException(Throwable e) {
-        super(e);
+    public KlabInternalErrorException(Throwable cause) {
+        super(cause);
+    }
+    
+    /**
+     * Instantiates a new klab internal error exception.
+     * @param message the message
+     * @param cause the cause
+     */
+    public KlabInternalErrorException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }
