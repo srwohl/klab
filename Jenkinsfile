@@ -69,15 +69,7 @@ pipeline {
         stage ('Clone Repo') {
             steps {
 
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '**']],
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        credentialsId: "${params.GIT_CREDENTIALS}", 
-                        url: 'git@github.com:integratedmodelling/klab.git'
-                    ]]
-                ])
+                checkout scm
 
                 withCredentials(
                     [usernamePassword(
@@ -88,44 +80,40 @@ pipeline {
                     ]){ sh 'mc alias set minio $MINIO_HOST $ACCESSKEY $SECRETKEY' }
 
                 script {
-                    
                     if  (TAG.isEmpty() == false) {
                         echo "Tag parameterize"
                         sh "git checkout tags/${TAG} -b latest"
                         BRANCH = MAIN
                         env.TAG = TAG
                     } else {
-						if (BRANCH.isEmpty() == false) {
-					    	echo "Branch parameterize"
-					    } else {
-					    	echo "Unparameterize checkout of latest commit"
-					    	BRANCH = sh(
-					        	returnStdout: true,
-					        	script: 'git for-each-ref --count=1 --sort=-committerdate --format="%(refname:short)"'
-					    	).trim().replace("origin/", "")
-					    }
-					    sh "git checkout ${BRANCH}"
-					    env.TAG = BRANCH.replace("/","-")
-					    if (BRANCH == MAIN) {
-					        env.BRANCH = MAIN
-					        env.TAG = "latest"
-					        echo "Latest"
-					    } else if (BRANCH == DEVELOP) {
-					        env.BRANCH = DEVELOP
-					        env.TAG = DEVELOP
-					        echo "Develop"
-					    } else {
-					        PRODUCTS_GEN = "no"
-					        echo "Other: ${BRANCH}"
-					    }    
-					}
-					
-              		env.SNAPSHOT = sh(
+                        if (BRANCH.isEmpty() == false) {
+                            echo "Branch parameterize"
+                        } else {
+                            echo "Unparameterize checkout of latest commit"
+                            BRANCH = sh(returnStdout: true,
+                                script: 'git for-each-ref --count=1 --sort=-committerdate ' + 
+                                        '--format="%(refname:short)"').trim().replace("origin/", "")
+                        }
+                        sh "git checkout ${BRANCH}"
+                        env.TAG = BRANCH.replace("/","-")
+                        if (BRANCH == MAIN) {
+                            env.BRANCH = MAIN
+                            env.TAG = "latest"
+                            echo "Latest"
+                        } else if (BRANCH == DEVELOP) {
+                            env.BRANCH = DEVELOP
+                            env.TAG = DEVELOP
+                            echo "Develop"
+                        } else {
+                            PRODUCTS_GEN = "no"
+                            echo "Other: ${BRANCH}"
+                        }
+                    }       
+                    env.SNAPSHOT = sh(
                         returnStdout: true, 
                         script: 'mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate ' +
                                 '-Dexpression=project.version -q -DforceStdout ' +
-                                '--batch-mode -U -e -Dsurefire.useFile=false'
-                        ).trim()
+                                '--batch-mode -U -e -Dsurefire.useFile=false').trim()
 
                     env.CURRENT_COMMIT = sh (
                             script: 'git rev-parse --verify HEAD',
@@ -144,12 +132,10 @@ pipeline {
                         env.TAG = env.LATEST_TAG
                         PRODUCTS_GEN = "yes"
                     }
-                  	
                     env.BRANCH = BRANCH
                     currentBuild.description = "${BRANCH} build with container tag: ${env.TAG}"
                     echo "${BRANCH} build with container tag: ${env.TAG} and products generations is ${PRODUCTS_GEN}"
                 }
-
             }
         }
         
@@ -162,7 +148,6 @@ pipeline {
                         "sed -i 's;\"VERSION_BUILD;\"${env.BUILD_NUMBER};g' Version.java && " +
                         "sed -i 's;\"VERSION_DATE;\"${env.VERSION_DATE};g' Version.java"
             }
-
         }
 
         stage('Maven install with jib') {
@@ -241,5 +226,3 @@ def prepareKmodelersUpload(list, destination) {
         }
     }
 }
-
-
